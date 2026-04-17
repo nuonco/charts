@@ -1,0 +1,81 @@
+{{ template "chart.header" . }}
+
+{{ template "chart.deprecationWarning" . }}
+
+{{ template "chart.badgesSection" . }}
+
+{{ template "chart.description" . }}
+
+## Overview
+
+This chart deploys the ctl-api, which consists of:
+
+- **API servers** — admin, auth, public, and runner endpoints, each behind their own ingress/ALB
+- **Workers** — Temporal worker deployments, dynamically created from `worker.instances`
+
+The chart supports both AWS (ALB-based ingress) and GCP (Gateway API) deployments.
+
+{{ template "chart.homepageLine" . }}
+
+{{ template "chart.sourcesSection" . }}
+
+{{ template "chart.requirementsSection" . }}
+
+## Installing the Chart
+
+```bash
+helm install ctl-api oci://ghcr.io/nuonco/charts/ctl-api --version <version>
+```
+
+## Environment Variables
+
+The `env` map is passed directly into the ConfigMap consumed by all API and worker pods. The following variables are supported by the ctl-api application:
+
+
+# dashboard-ui Environment Variables
+
+The `env` map is passed directly into the ConfigMap consumed by all dashboard-ui pods.
+
+| Variable                           | Required | Description                                                      |
+| ---------------------------------- | -------- | ---------------------------------------------------------------- |
+| **General**                        |          |                                                                  |
+| `ENV`                              | yes      | Environment name (e.g. `byoc`, `staging`)                        |
+| `HTTP_PORT`                        | no       | HTTP listen port                                                 |
+| `NUON_BYOC`                        | no       | Flag indicating a BYOC deployment (`true`/`false`)               |
+| `METRICS_TAGS`                     | no       | Comma-separated Datadog metric tags (e.g. `org_id:x,org_name:y`) |
+| **API URLs**                       |          |                                                                  |
+| `NUON_API_URL`                     | yes      | Server-side Nuon API URL                                         |
+| `NEXT_PUBLIC_API_URL`              | yes      | Client-side Nuon API URL                                         |
+| `NUON_CTL_API_ADMIN_URL`           | yes      | Internal admin API URL                                           |
+| `NUON_TEMPORAL_UI_URL`             | no       | Temporal UI URL                                                  |
+| `NUON_APP_URL`                     | yes      | Public URL of the dashboard app                                  |
+| **Datadog**                        |          |                                                                  |
+| `NEXT_PUBLIC_DATADOG_ENV`          | no       | Datadog environment tag                                          |
+| `NEXT_PUBLIC_DATADOG_SITE`         | no       | Datadog site (e.g. `us5.datadoghq.com`)                          |
+| `NEXT_PUBLIC_DATADOG_CLIENT_TOKEN` | no       | Datadog RUM client token                                         |
+| `NEXT_PUBLIC_DATADOG_APP_ID`       | no       | Datadog RUM application ID                                       |
+| **Auth**                           |          |                                                                  |
+| `NUON_AUTH_SERVICE_URL`            | no       | Nuon auth service URL; non-empty value enables Nuon auth         |
+| `AUTH0_CLIENT_SECRET`              | yes      | Auth0 client secret (via `envSecrets`)                           |
+| `AUTH0_SECRET`                     | yes      | Auth0 session secret (via `envSecrets`)                          |
+| **GitHub**                         |          |                                                                  |
+| `GITHUB_APP_NAME`                  | yes      | GitHub App name                                                  |
+| **Feature Flags**                  |          |                                                                  |
+| `NUON_CANCEL_JOBS`                 | no       | Enable job cancellation UI (`true`/`false`)                      |
+| `NUON_DEPLOY_DATA`                 | no       | Enable deploy data UI (`true`/`false`)                           |
+| `NUON_INSTALL_REPROVISION`         | no       | Enable install reprovision UI (`true`/`false`)                   |
+| `NUON_INSTALL_UPDATE`              | no       | Enable install update UI (`true`/`false`)                        |
+| `NUON_ORG_DASHBOARD`               | no       | Enable org dashboard UI (`true`/`false`)                         |
+| `NUON_ORG_RUNNER`                  | no       | Enable org runner UI (`true`/`false`)                            |
+| `NUON_ORG_SETTINGS`                | no       | Enable org settings UI (`true`/`false`)                          |
+| `NUON_ORG_SUPPORT`                 | no       | Enable org support UI (`true`/`false`)                           |
+| `NUON_RUNNERS`                     | no       | Enable runners UI (`true`/`false`)                               |
+| `NUON_WORKFLOWS`                   | no       | Enable workflows UI (`true`/`false`)                             |
+| **Misc**                           |          |                                                                  |
+| `SEGMENT_WRITE_KEY`                | no       | Segment analytics write key (set `false` to disable)             |
+
+{{ template "chart.valuesSection" . }}
+
+{{ template "chart.maintainersSection" . }}
+
+{{ template "helm-docs.versionFooter" . }}

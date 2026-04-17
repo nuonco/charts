@@ -16,13 +16,38 @@ env:
   REPO_OWNER: nuonco
 
 jobs:
+  detect:
+    runs-on: ubuntu-latest
+    outputs:
+      charts: ${{ steps.changed.outputs.charts }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: Detect changed charts
+        id: changed
+        run: |
+          charts=()
+          for chart in charts/*/; do
+            name=$(basename "$chart")
+            if git diff --name-only HEAD~1 HEAD -- "$chart" | grep -q .; then
+              charts+=("\"${name}\"")
+            fi
+          done
+          if [ ${#charts[@]} -eq 0 ]; then
+            echo "charts=[]" >> "$GITHUB_OUTPUT"
+          else
+            echo "charts=[$(IFS=,; echo "${charts[*]}")]" >> "$GITHUB_OUTPUT"
+          fi
+
   release:
+    needs: detect
+    if: needs.detect.outputs.charts != '[]'
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        chart:
-          - ctl-api
-          - dashboard-ui
+        chart: ${{ fromJson(needs.detect.outputs.charts) }}
     steps:
       - uses: actions/checkout@v4
 

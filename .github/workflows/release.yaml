@@ -1,0 +1,40 @@
+name: Release Charts
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "charts/**"
+
+permissions:
+  packages: write
+  contents: read
+
+env:
+  REGISTRY: ghcr.io
+  REPO_OWNER: nuonco
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        chart:
+          - ctl-api
+          - dashboard-ui
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: azure/setup-helm@v4
+
+      - name: Login to GHCR
+        run: echo "${{ secrets.GITHUB_TOKEN }}" | helm registry login ${{ env.REGISTRY }} -u ${{ github.actor }} --password-stdin
+
+      - name: Package and push ${{ matrix.chart }}
+        run: |
+          chart_dir="charts/${{ matrix.chart }}"
+          helm package "${chart_dir}"
+          chart_version=$(grep '^version:' "${chart_dir}/Chart.yaml" | awk '{print $2}')
+          chart_name=${{ matrix.chart }}
+          helm push "${chart_name}-${chart_version}.tgz" "oci://${{ env.REGISTRY }}/${{ env.REPO_OWNER }}/charts"

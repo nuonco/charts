@@ -1,0 +1,30 @@
+name: Lint Charts
+
+on:
+  pull_request:
+    paths:
+      - "charts/**"
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: azure/setup-helm@v4
+
+      - name: Lint charts
+        run: |
+          for chart in charts/*/; do
+            echo "==> Linting ${chart}"
+            helm lint "${chart}"
+          done
+
+      - name: Template charts
+        run: |
+          for chart in charts/*/; do
+            echo "==> Templating ${chart}"
+            helm template test "${chart}"
+          done

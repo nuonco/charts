@@ -1,0 +1,159 @@
+# -- Override the chart name
+nameOverride: ""
+# -- Override the full release name
+fullnameOverride: ""
+
+# -- Deployment environment name (e.g. `production`, `staging`)
+environment: ""
+
+image:
+  # -- Container image repository
+  repository: ""
+  # -- Container image tag
+  tag: ""
+
+serviceAccount:
+  # -- Whether to create and use a service account
+  enabled: true
+  # -- Service account name
+  name: ""
+  # -- Annotations to add to the service account
+  annotations: {}
+
+# -- Environment variables set via the ConfigMap (key/value pairs)
+env: {}
+
+# -- Secrets to inject as environment variables
+# @default -- `[]`
+# Example:
+# ```yaml
+# envSecrets:
+#   - name: SECRET_KEY
+#     valueFrom:
+#       name: my-secret
+#       key: secret-key
+# ```
+envSecrets: []
+
+# -- GCP-specific configuration. When set, GCP ingress resources are created instead of AWS ALBs.
+# @default -- disabled
+gcp:
+  # -- GCP certificate map name for the gateway
+  certMap: ""
+
+auth:
+  # -- Enable the auth API endpoint
+  enabled: false
+  # -- Secrets specific to the auth API
+  envSecrets: []
+
+api:
+  # -- Liveness probe configuration for API deployments
+  liveness_probe: {}
+  # -- Readiness probe configuration for API deployments
+  readiness_probe: {}
+  # -- Minimum number of domains for topology spread constraints
+  minDomains: 1
+  # -- Node selector for API pods
+  nodeSelector: {}
+  # -- Tolerations for API pods
+  tolerations: []
+  resources:
+    requests:
+      # -- CPU request for API containers
+      cpu: "100m"
+      # -- Memory request for API containers
+      memory: "128Mi"
+    limits:
+      # -- CPU limit for API containers
+      cpu: "500m"
+      # -- Memory limit for API containers
+      memory: "512Mi"
+  admin:
+    # -- Admin API domain
+    domain: ""
+    # -- Admin API container port
+    port: 8080
+    autoscaling:
+      # -- Minimum replicas for admin API
+      minReplicas: 1
+      # -- Maximum replicas for admin API
+      maxReplicas: 3
+      # -- Target CPU utilization for admin API autoscaling
+      targetCPUUtilizationPercentage: 80
+      # -- Target memory utilization for admin API autoscaling
+      targetMemoryUtilizationPercentage: 80
+  auth:
+    # -- Auth API domain
+    domain: ""
+    # -- Auth API TLS certificate ARN (AWS) or name (GCP)
+    domain_certificate: ""
+    # -- Auth API container port
+    port: 8080
+    autoscaling:
+      # -- Minimum replicas for auth API
+      minReplicas: 1
+      # -- Maximum replicas for auth API
+      maxReplicas: 3
+      # -- Target CPU utilization for auth API autoscaling
+      targetCPUUtilizationPercentage: 80
+      # -- Target memory utilization for auth API autoscaling
+      targetMemoryUtilizationPercentage: 80
+  public:
+    # -- Public API domain
+    domain: ""
+    # -- Public API TLS certificate ARN (AWS) or name (GCP)
+    domain_certificate: ""
+    # -- Public API container port
+    port: 8080
+    autoscaling:
+      # -- Minimum replicas for public API
+      minReplicas: 1
+      # -- Maximum replicas for public API
+      maxReplicas: 3
+      # -- Target CPU utilization for public API autoscaling
+      targetCPUUtilizationPercentage: 80
+      # -- Target memory utilization for public API autoscaling
+      targetMemoryUtilizationPercentage: 80
+  runner:
+    # -- Runner API domain
+    domain: ""
+    # -- Runner API TLS certificate ARN (AWS) or name (GCP)
+    domain_certificate: ""
+    # -- Runner API container port
+    port: 8080
+    autoscaling:
+      # -- Minimum replicas for runner API
+      minReplicas: 1
+      # -- Maximum replicas for runner API
+      maxReplicas: 3
+      # -- Target CPU utilization for runner API autoscaling
+      targetCPUUtilizationPercentage: 80
+      # -- Target memory utilization for runner API autoscaling
+      targetMemoryUtilizationPercentage: 80
+
+worker:
+  # -- Default resource requests/limits for all workers (can be overridden per instance)
+  resources: {}
+  # -- Node selector for worker pods
+  nodeSelector: {}
+  # -- Tolerations for worker pods
+  tolerations: []
+  autoscaling:
+    # -- Target CPU utilization for worker autoscaling
+    targetCPUUtilizationPercentage: 80
+    # -- Target memory utilization for worker autoscaling
+    targetMemoryUtilizationPercentage: 80
+  # -- Worker instance definitions. Each entry creates a separate Deployment.
+  # @default -- `[]`
+  # Example:
+  # ```yaml
+  # instances:
+  #   - namespace: my-temporal-ns
+  #     command: ["./worker", "--namespace", "my-temporal-ns"]
+  #     resources:
+  #       requests:
+  #         cpu: "200m"
+  #         memory: "256Mi"
+  # ```
+  instances: []

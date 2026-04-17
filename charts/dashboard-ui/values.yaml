@@ -1,0 +1,69 @@
+# -- Override the chart name
+nameOverride: ""
+# -- Override the full release name
+fullnameOverride: ""
+
+# -- Deployment environment name (e.g. `production`, `staging`)
+environment: ""
+
+image:
+  # -- Container image repository
+  repository: ""
+  # -- Container image tag
+  tag: ""
+
+serviceAccount:
+  # -- Whether to create and use a service account
+  enabled: true
+  # -- Service account name
+  name: ""
+  # -- Annotations to add to the service account
+  annotations: {}
+
+# -- Environment variables set via the ConfigMap (key/value pairs)
+env: {}
+
+# -- Secrets to inject as environment variables
+# @default -- `[]`
+envSecrets: []
+
+# -- GCP-specific configuration. When set, GCP ingress resources are created instead of AWS ALBs.
+# @default -- disabled
+gcp: {}
+
+ui:
+  # -- UI container port
+  port: 4000
+  # -- Liveness probe path
+  liveness_probe: /livez
+  # -- Readiness probe path
+  readiness_probe: /readyz
+  # -- Node selector for UI pods
+  nodeSelector: {}
+  # -- Tolerations for UI pods
+  tolerations: []
+  resources:
+    requests:
+      # -- CPU request for UI containers
+      cpu: "500m"
+      # -- Memory request for UI containers
+      memory: "512Mi"
+    limits:
+      # -- CPU limit for UI containers
+      cpu: "1000m"
+      # -- Memory limit for UI containers
+      memory: "1024Mi"
+  alb:
+    # -- Public domain for the ALB
+    public_domain: ""
+    # -- TLS certificate ARN (AWS) for the ALB
+    public_domain_certificate: ""
+  autoscaling:
+    # -- Minimum replicas
+    minReplicas: 2
+    # -- Maximum replicas
+    maxReplicas: 5
+    # -- Target CPU utilization for autoscaling
+    targetCPUUtilizationPercentage: 50
+    # -- Target memory utilization for autoscaling
+    targetMemoryUtilizationPercentage: 50

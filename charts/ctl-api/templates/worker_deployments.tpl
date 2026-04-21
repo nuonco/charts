@@ -8,6 +8,7 @@ metadata:
   labels:
     {{- include "common.workerLabels" $ | nindent 4 }}
     app.nuon.co/worker-namespace: {{ .namespace }}
+    app.nuon.co/name: {{ include "common.fullname" $ }}-worker-{{ .namespace }}
 spec:
   selector:
     matchLabels:
@@ -15,6 +16,8 @@ spec:
       app.nuon.co/worker-namespace: {{ .namespace }}
   template:
     metadata:
+      annotations:
+        rollme: {{ randAlphaNum 5 | quote }}
       labels:
         {{- include "common.workerSelectorLabels" $ | nindent 8 }}
         app.nuon.co/worker-namespace: {{ .namespace }}
@@ -24,14 +27,16 @@ spec:
     spec:
       serviceAccountName: {{ $.Values.serviceAccount.name }}
       automountServiceAccountToken: true
-      {{- with $.Values.worker.nodeSelector }}
+      # start: node selector
+      {{- $nodePool := .node_pool | default $.Values.worker.default_node_pool }}
       nodeSelector:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
-      {{- with $.Values.worker.tolerations }}
+        pool.nuon.co: {{ $nodePool | quote }}
       tolerations:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
+        - key: "pool.nuon.co"
+          operator: "Equal"
+          value: {{ $nodePool | quote }}
+          effect: "NoSchedule"
+      # end: node selector
       # start: Topology Spread Constraints
       topologySpreadConstraints:
         - maxSkew: 2
@@ -82,8 +87,10 @@ spec:
             - name: SERVICE_TYPE
               value: worker
             - name: SERVICE_DEPLOYMENT
-              value: {{ .namespace }}
+              value: {{.namespace}}
             - name: TEMPORAL_NAMESPACE
-              value: {{ .namespace }}
-
+              value: {{.namespace}}
+          {{- if . | dig "extraEnv" (list) }}
+            {{- .extraEnv | toYaml | nindent 12 }}
+          {{- end }}
 {{- end }}

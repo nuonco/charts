@@ -35,9 +35,11 @@ env: {}
 # ```
 envSecrets: []
 
-# -- GCP-specific configuration. When set, GCP ingress resources are created instead of AWS ALBs.
+# -- GCP-specific configuration. When enabled, GCP Gateway/HTTPRoute/HealthCheckPolicy resources are created instead of AWS ALBs.
 # @default -- disabled
 gcp:
+  # -- Enable GCP ingress resources (Gateway API). Requires the Gateway API and `networking.gke.io` CRDs to be installed on the cluster.
+  enabled: false
   # -- GCP certificate map name for the gateway
   certMap: ""
 

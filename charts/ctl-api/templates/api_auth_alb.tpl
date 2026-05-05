@@ -1,4 +1,4 @@
-{{- if and .Values.auth.enabled (not .Values.gcp) }}
+{{- if and .Values.auth.enabled (not .Values.gcp.enabled) }}
 ---
 apiVersion: networking.k8s.io/v1
 kind: Ingress

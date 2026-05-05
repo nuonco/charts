@@ -85,8 +85,5 @@ spec:
               value: {{ .namespace }}
             - name: TEMPORAL_NAMESPACE
               value: {{ .namespace }}
-          {{- with .extraEnv }}
-            {{- toYaml . | nindent 12 }}
-          {{- end }}
 
 {{- end }}

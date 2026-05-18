@@ -40,18 +40,20 @@ spec:
       topologySpreadConstraints:
         - maxSkew: 1
           topologyKey: "topology.kubernetes.io/zone"
-          whenUnsatisfiable: ScheduleAnyway
+          whenUnsatisfiable: DoNotSchedule
+          matchLabelKeys:
+            - pod-template-hash
           labelSelector:
             matchLabels:
-              {{- /* plucked from common.apiSelectorLabels */}}
               app.nuon.co/name: {{ include "common.fullname" . }}-auth
         - maxSkew: 2
           minDomains: {{ .Values.api.minDomains }}
           topologyKey: "kubernetes.io/hostname"
           whenUnsatisfiable: DoNotSchedule
+          matchLabelKeys:
+            - pod-template-hash
           labelSelector:
             matchLabels:
-              {{- /* plucked from common.apiSelectorLabels */}}
               app.nuon.co/name: {{ include "common.fullname" . }}-auth
       # end: Topology Spread Constraints
       containers:

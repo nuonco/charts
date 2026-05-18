@@ -34,13 +34,16 @@ spec:
       {{- end }}
       # start: Topology Spread Constraints
       topologySpreadConstraints:
-        - maxSkew: 2
+        - maxSkew: 1
           topologyKey: "topology.kubernetes.io/zone"
-          whenUnsatisfiable: ScheduleAnyway
+          whenUnsatisfiable: DoNotSchedule
+          matchLabelKeys:
+            - pod-template-hash
           labelSelector:
             matchLabels:
-              {{- /* plucked from common.apiSelectorLabels */}}
+              {{- /* plucked from common.workerSelectorLabels */}}
               app.kubernetes.io/name: {{ include "common.name" $ }}-worker
+              app.nuon.co/worker-namespace: {{ .namespace }}
         - maxSkew: 2
           topologyKey: "kubernetes.io/hostname"
           whenUnsatisfiable: ScheduleAnyway
@@ -48,6 +51,7 @@ spec:
             matchLabels:
               {{- /* plucked from common.workerSelectorLabels */}}
               app.kubernetes.io/name: {{ include "common.name" $ }}-worker
+              app.nuon.co/worker-namespace: {{ .namespace }}
       # end: Topology Spread Constraints
       containers:
         - name: {{ include "common.fullname" $ }}-worker-{{ .namespace }}

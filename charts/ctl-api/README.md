@@ -1,8 +1,6 @@
 # ctl-api
 
-![Version: 0.1.0](https://img.shields.io/badge/Version-0.1.0-informational?style=flat-square)
-![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square)
-![AppVersion: 0.0.1](https://img.shields.io/badge/AppVersion-0.0.1-informational?style=flat-square)
+![Version: 0.1.0](https://img.shields.io/badge/Version-0.1.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 0.0.1](https://img.shields.io/badge/AppVersion-0.0.1-informational?style=flat-square)
 
 A helm chart for deploying the ctl-api (api and workers).
 
@@ -23,8 +21,7 @@ helm install ctl-api oci://ghcr.io/nuonco/charts/ctl-api --version <version>
 
 ## Environment Variables
 
-The `env` map is passed directly into the ConfigMap consumed by all API and worker pods. The following variables are
-supported by the ctl-api application:
+The `env` map is passed directly into the ConfigMap consumed by all API and worker pods. The following variables are supported by the ctl-api application:
 
 | Variable                                          | Required | Description                                         |
 | ------------------------------------------------- | -------- | --------------------------------------------------- |
@@ -118,65 +115,66 @@ supported by the ctl-api application:
 
 ## Values
 
-| Key                                                      | Type   | Default   | Description                                                                                                                                                                                                                                                            |
-| -------------------------------------------------------- | ------ | --------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| api.admin.autoscaling.maxReplicas                        | int    | `3`       | Maximum replicas for admin API                                                                                                                                                                                                                                         |
-| api.admin.autoscaling.minReplicas                        | int    | `1`       | Minimum replicas for admin API                                                                                                                                                                                                                                         |
-| api.admin.autoscaling.targetCPUUtilizationPercentage     | int    | `80`      | Target CPU utilization for admin API autoscaling                                                                                                                                                                                                                       |
-| api.admin.autoscaling.targetMemoryUtilizationPercentage  | int    | `80`      | Target memory utilization for admin API autoscaling                                                                                                                                                                                                                    |
-| api.admin.domain                                         | string | `""`      | Admin API domain                                                                                                                                                                                                                                                       |
-| api.admin.port                                           | int    | `8080`    | Admin API container port                                                                                                                                                                                                                                               |
-| api.auth.autoscaling.maxReplicas                         | int    | `3`       | Maximum replicas for auth API                                                                                                                                                                                                                                          |
-| api.auth.autoscaling.minReplicas                         | int    | `1`       | Minimum replicas for auth API                                                                                                                                                                                                                                          |
-| api.auth.autoscaling.targetCPUUtilizationPercentage      | int    | `80`      | Target CPU utilization for auth API autoscaling                                                                                                                                                                                                                        |
-| api.auth.autoscaling.targetMemoryUtilizationPercentage   | int    | `80`      | Target memory utilization for auth API autoscaling                                                                                                                                                                                                                     |
-| api.auth.domain                                          | string | `""`      | Auth API domain                                                                                                                                                                                                                                                        |
-| api.auth.domain_certificate                              | string | `""`      | Auth API TLS certificate ARN (AWS) or name (GCP)                                                                                                                                                                                                                       |
-| api.auth.port                                            | int    | `8080`    | Auth API container port                                                                                                                                                                                                                                                |
-| api.liveness_probe                                       | object | `{}`      | Liveness probe configuration for API deployments                                                                                                                                                                                                                       |
-| api.minDomains                                           | int    | `1`       | Minimum number of domains for topology spread constraints                                                                                                                                                                                                              |
-| api.nodeSelector                                         | object | `{}`      | Node selector for API pods                                                                                                                                                                                                                                             |
-| api.public.autoscaling.maxReplicas                       | int    | `3`       | Maximum replicas for public API                                                                                                                                                                                                                                        |
-| api.public.autoscaling.minReplicas                       | int    | `1`       | Minimum replicas for public API                                                                                                                                                                                                                                        |
-| api.public.autoscaling.targetCPUUtilizationPercentage    | int    | `80`      | Target CPU utilization for public API autoscaling                                                                                                                                                                                                                      |
-| api.public.autoscaling.targetMemoryUtilizationPercentage | int    | `80`      | Target memory utilization for public API autoscaling                                                                                                                                                                                                                   |
-| api.public.domain                                        | string | `""`      | Public API domain                                                                                                                                                                                                                                                      |
-| api.public.domain_certificate                            | string | `""`      | Public API TLS certificate ARN (AWS) or name (GCP)                                                                                                                                                                                                                     |
-| api.public.port                                          | int    | `8080`    | Public API container port                                                                                                                                                                                                                                              |
-| api.readiness_probe                                      | object | `{}`      | Readiness probe configuration for API deployments                                                                                                                                                                                                                      |
-| api.resources.limits.cpu                                 | string | `"500m"`  | CPU limit for API containers                                                                                                                                                                                                                                           |
-| api.resources.limits.memory                              | string | `"512Mi"` | Memory limit for API containers                                                                                                                                                                                                                                        |
-| api.resources.requests.cpu                               | string | `"100m"`  | CPU request for API containers                                                                                                                                                                                                                                         |
-| api.resources.requests.memory                            | string | `"128Mi"` | Memory request for API containers                                                                                                                                                                                                                                      |
-| api.runner.autoscaling.maxReplicas                       | int    | `3`       | Maximum replicas for runner API                                                                                                                                                                                                                                        |
-| api.runner.autoscaling.minReplicas                       | int    | `1`       | Minimum replicas for runner API                                                                                                                                                                                                                                        |
-| api.runner.autoscaling.targetCPUUtilizationPercentage    | int    | `80`      | Target CPU utilization for runner API autoscaling                                                                                                                                                                                                                      |
-| api.runner.autoscaling.targetMemoryUtilizationPercentage | int    | `80`      | Target memory utilization for runner API autoscaling                                                                                                                                                                                                                   |
-| api.runner.domain                                        | string | `""`      | Runner API domain                                                                                                                                                                                                                                                      |
-| api.runner.domain_certificate                            | string | `""`      | Runner API TLS certificate ARN (AWS) or name (GCP)                                                                                                                                                                                                                     |
-| api.runner.port                                          | int    | `8080`    | Runner API container port                                                                                                                                                                                                                                              |
-| api.tolerations                                          | list   | `[]`      | Tolerations for API pods                                                                                                                                                                                                                                               |
-| auth.enabled                                             | bool   | `false`   | Enable the auth API endpoint                                                                                                                                                                                                                                           |
-| auth.envSecrets                                          | list   | `[]`      | Secrets specific to the auth API                                                                                                                                                                                                                                       |
-| env                                                      | object | `{}`      | Environment variables set via the ConfigMap (key/value pairs)                                                                                                                                                                                                          |
-| envSecrets                                               | list   | `[]`      | Secrets to inject as environment variables Example: `yaml envSecrets:   - name: SECRET_KEY     valueFrom:       name: my-secret       key: secret-key `                                                                                                                |
-| environment                                              | string | `""`      | Deployment environment name (e.g. `production`, `staging`)                                                                                                                                                                                                             |
-| fullnameOverride                                         | string | `""`      | Override the full release name                                                                                                                                                                                                                                         |
-| gcp                                                      | object | disabled  | GCP-specific configuration. When set, GCP ingress resources are created instead of AWS ALBs.                                                                                                                                                                           |
-| gcp.certMap                                              | string | `""`      | GCP certificate map name for the gateway                                                                                                                                                                                                                               |
-| image.repository                                         | string | `""`      | Container image repository                                                                                                                                                                                                                                             |
-| image.tag                                                | string | `""`      | Container image tag                                                                                                                                                                                                                                                    |
-| nameOverride                                             | string | `""`      | Override the chart name                                                                                                                                                                                                                                                |
-| serviceAccount.annotations                               | object | `{}`      | Annotations to add to the service account                                                                                                                                                                                                                              |
-| serviceAccount.enabled                                   | bool   | `true`    | Whether to create and use a service account                                                                                                                                                                                                                            |
-| serviceAccount.name                                      | string | `""`      | Service account name                                                                                                                                                                                                                                                   |
-| worker.autoscaling.targetCPUUtilizationPercentage        | int    | `80`      | Target CPU utilization for worker autoscaling                                                                                                                                                                                                                          |
-| worker.autoscaling.targetMemoryUtilizationPercentage     | int    | `80`      | Target memory utilization for worker autoscaling                                                                                                                                                                                                                       |
-| worker.instances                                         | list   | `[]`      | Worker instance definitions. Each entry creates a separate Deployment. Example: `yaml instances:   - namespace: my-temporal-ns     command: ["./worker", "--namespace", "my-temporal-ns"]     resources:       requests:         cpu: "200m"         memory: "256Mi" ` |
-| worker.nodeSelector                                      | object | `{}`      | Node selector for worker pods                                                                                                                                                                                                                                          |
-| worker.resources                                         | object | `{}`      | Default resource requests/limits for all workers (can be overridden per instance)                                                                                                                                                                                      |
-| worker.tolerations                                       | list   | `[]`      | Tolerations for worker pods                                                                                                                                                                                                                                            |
+| Key | Type | Default | Description |
+|-----|------|---------|-------------|
+| api.admin.autoscaling.maxReplicas | int | `3` | Maximum replicas for admin API |
+| api.admin.autoscaling.minReplicas | int | `1` | Minimum replicas for admin API |
+| api.admin.autoscaling.targetCPUUtilizationPercentage | int | `80` | Target CPU utilization for admin API autoscaling |
+| api.admin.autoscaling.targetMemoryUtilizationPercentage | int | `80` | Target memory utilization for admin API autoscaling |
+| api.admin.domain | string | `""` | Admin API domain |
+| api.admin.port | int | `8080` | Admin API container port |
+| api.auth.autoscaling.maxReplicas | int | `3` | Maximum replicas for auth API |
+| api.auth.autoscaling.minReplicas | int | `1` | Minimum replicas for auth API |
+| api.auth.autoscaling.targetCPUUtilizationPercentage | int | `80` | Target CPU utilization for auth API autoscaling |
+| api.auth.autoscaling.targetMemoryUtilizationPercentage | int | `80` | Target memory utilization for auth API autoscaling |
+| api.auth.domain | string | `""` | Auth API domain |
+| api.auth.domain_certificate | string | `""` | Auth API TLS certificate ARN (AWS) or name (GCP) |
+| api.auth.port | int | `8080` | Auth API container port |
+| api.liveness_probe | object | `{}` | Liveness probe configuration for API deployments |
+| api.nodeSelector | object | `{}` | Node selector for API pods |
+| api.public.autoscaling.maxReplicas | int | `3` | Maximum replicas for public API |
+| api.public.autoscaling.minReplicas | int | `1` | Minimum replicas for public API |
+| api.public.autoscaling.targetCPUUtilizationPercentage | int | `80` | Target CPU utilization for public API autoscaling |
+| api.public.autoscaling.targetMemoryUtilizationPercentage | int | `80` | Target memory utilization for public API autoscaling |
+| api.public.domain | string | `""` | Public API domain |
+| api.public.domain_certificate | string | `""` | Public API TLS certificate ARN (AWS) or name (GCP) |
+| api.public.port | int | `8080` | Public API container port |
+| api.readiness_probe | object | `{}` | Readiness probe configuration for API deployments |
+| api.resources.limits.cpu | string | `"500m"` | CPU limit for API containers |
+| api.resources.limits.memory | string | `"512Mi"` | Memory limit for API containers |
+| api.resources.requests.cpu | string | `"100m"` | CPU request for API containers |
+| api.resources.requests.memory | string | `"128Mi"` | Memory request for API containers |
+| api.runner.autoscaling.maxReplicas | int | `3` | Maximum replicas for runner API |
+| api.runner.autoscaling.minReplicas | int | `1` | Minimum replicas for runner API |
+| api.runner.autoscaling.targetCPUUtilizationPercentage | int | `80` | Target CPU utilization for runner API autoscaling |
+| api.runner.autoscaling.targetMemoryUtilizationPercentage | int | `80` | Target memory utilization for runner API autoscaling |
+| api.runner.domain | string | `""` | Runner API domain |
+| api.runner.domain_certificate | string | `""` | Runner API TLS certificate ARN (AWS) or name (GCP) |
+| api.runner.port | int | `8080` | Runner API container port |
+| api.tolerations | list | `[]` | Tolerations for API pods |
+| api.topologySpreadConstraints | list | `[]` | Topology spread constraints for API pods (applied to admin, auth, public, runner, startup) |
+| auth.enabled | bool | `false` | Enable the auth API endpoint |
+| auth.envSecrets | list | `[]` | Secrets specific to the auth API |
+| env | object | `{}` | Environment variables set via the ConfigMap (key/value pairs) |
+| envSecrets | list | `[]` | Secrets to inject as environment variables Example: ```yaml envSecrets:   - name: SECRET_KEY     valueFrom:       name: my-secret       key: secret-key ``` |
+| environment | string | `""` | Deployment environment name (e.g. `production`, `staging`) |
+| fullnameOverride | string | `""` | Override the full release name |
+| gcp | object | disabled | GCP-specific configuration. When enabled, GCP Gateway/HTTPRoute/HealthCheckPolicy resources are created instead of AWS ALBs. |
+| gcp.certMap | string | `""` | GCP certificate map name for the gateway |
+| gcp.enabled | bool | `false` | Enable GCP ingress resources (Gateway API). Requires the Gateway API and `networking.gke.io` CRDs to be installed on the cluster. |
+| image.repository | string | `""` | Container image repository |
+| image.tag | string | `""` | Container image tag |
+| nameOverride | string | `""` | Override the chart name |
+| serviceAccount.annotations | object | `{}` | Annotations to add to the service account |
+| serviceAccount.enabled | bool | `true` | Whether to create and use a service account |
+| serviceAccount.name | string | `""` | Service account name |
+| worker.autoscaling.targetCPUUtilizationPercentage | int | `80` | Target CPU utilization for worker autoscaling |
+| worker.autoscaling.targetMemoryUtilizationPercentage | int | `80` | Target memory utilization for worker autoscaling |
+| worker.instances | list | `[]` | Worker instance definitions. Each entry creates a separate Deployment. Example: ```yaml instances:   - namespace: my-temporal-ns     command: ["./worker", "--namespace", "my-temporal-ns"]     resources:       requests:         cpu: "200m"         memory: "256Mi" ``` |
+| worker.nodeSelector | object | `{}` | Node selector for worker pods |
+| worker.resources | object | `{}` | Default resource requests/limits for all workers (can be overridden per instance) |
+| worker.tolerations | list | `[]` | Tolerations for worker pods |
+| worker.topologySpreadConstraints | list | `[]` | Topology spread constraints for worker pods |
 
----
-
+----------------------------------------------
 Autogenerated from chart metadata using [helm-docs v1.14.2](https://github.com/norwoodj/helm-docs/releases/v1.14.2)

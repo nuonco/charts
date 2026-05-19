@@ -35,24 +35,14 @@ spec:
       {{- end }}
       # end: NodePool Selection
 
-      # start: Topology Spread Constraints
+      {{- with .Values.api.topologySpreadConstraints }}
       topologySpreadConstraints:
-        - maxSkew: 1
-          topologyKey: "topology.kubernetes.io/zone"
-          whenUnsatisfiable: ScheduleAnyway
-          labelSelector:
-            matchLabels:
-              {{- /* plucked from common.apiSelectorLabels */}}
-              app.nuon.co/name: {{ include "common.fullname" . }}-runner
-        - maxSkew: 1
-          minDomains: {{ .Values.api.minDomains }}
-          topologyKey: "kubernetes.io/hostname"
-          whenUnsatisfiable: DoNotSchedule
-          labelSelector:
-            matchLabels:
-              {{- /* plucked from common.apiSelectorLabels */}}
-              app.nuon.co/name: {{ include "common.fullname" . }}-runner
-      # end: Topology Spread Constraints
+        {{- include "common.topologySpreadConstraints" (dict
+            "constraints" .
+            "labelSelector" (dict "matchLabels"
+              (dict "app.nuon.co/name" (printf "%s-runner" (include "common.fullname" $))))
+        ) | nindent 8 }}
+      {{- end }}
       volumes:
         - name: iid-certs
           configMap:

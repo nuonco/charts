@@ -101,6 +101,15 @@ api:
       targetCPUUtilizationPercentage: 80
       # -- Target memory utilization for auth API autoscaling
       targetMemoryUtilizationPercentage: 80
+  slack:
+    # -- Enable the Slack integration listener (deployment, service, ALB)
+    enabled: false
+    # -- Slack listener domain (e.g. slack.<root_domain>)
+    domain: ""
+    # -- Slack listener TLS certificate ARN (AWS) or name (GCP)
+    domain_certificate: ""
+    # -- Slack listener container port
+    port: 8089
   public:
     # -- Public API domain
     domain: ""

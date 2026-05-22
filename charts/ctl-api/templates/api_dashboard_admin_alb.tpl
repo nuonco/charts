@@ -9,7 +9,7 @@ metadata:
     {{- include "common.apiLabels" . | nindent 4 }}
     app.nuon.co/name: {{ include "common.fullname" . }}-dashboard-admin
   annotations:
-    alb.ingress.kubernetes.io/scheme: public-facing
+    alb.ingress.kubernetes.io/scheme: internet-facing
     alb.ingress.kubernetes.io/target-type: ip
     alb.ingress.kubernetes.io/listen-ports: '[{"HTTPS":443}]'
     alb.ingress.kubernetes.io/certificate-arn: {{ .Values.api.dashboard_admin.domain_certificate }}

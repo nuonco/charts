@@ -101,6 +101,16 @@ api:
       targetCPUUtilizationPercentage: 80
       # -- Target memory utilization for auth API autoscaling
       targetMemoryUtilizationPercentage: 80
+  dashboard_admin:
+    enabled: false
+    port: 8085
+    domain: "xyz.com"
+    domain_certificate: "xyz.com"
+    autoscaling:
+      minReplicas: 2
+      maxReplicas: 4
+      targetCPUUtilizationPercentage: 60
+      targetMemoryUtilizationPercentage: 75
   slack:
     # -- Enable the Slack integration listener (deployment, service, ALB)
     enabled: false

@@ -73,6 +73,7 @@ spec:
                 secretKeyRef:
                   name: {{ $envSecret.valueFrom.name }}
                   key: {{ $envSecret.valueFrom.key }}
+                  optional: {{ $envSecret.optional | default false }}
           {{- end}}
           {{/* additional secrets for the auth service */}}
           {{- range $envSecret := .Values.auth.envSecrets }}
@@ -81,6 +82,7 @@ spec:
                 secretKeyRef:
                   name: {{ $envSecret.valueFrom.name }}
                   key: {{ $envSecret.valueFrom.key }}
+                  optional: {{ $envSecret.optional | default false }}
           {{- end}}
             - name: HOST_IP
               valueFrom:

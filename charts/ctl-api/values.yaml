@@ -60,17 +60,16 @@ api:
   tolerations: []
   # -- Topology spread constraints for API pods (applied to admin, auth, public, runner, startup)
   topologySpreadConstraints: []
+  # -- Default resources for every api deployment. Each api.<service> (public,
+  # admin, runner, auth, dashboard_admin, slack) can override this block —
+  # individual fields deep-merge over these defaults. `limits` is optional and
+  # can be omitted globally or per service.
   resources:
     requests:
       # -- CPU request for API containers
       cpu: "100m"
       # -- Memory request for API containers
       memory: "128Mi"
-    limits:
-      # -- CPU limit for API containers
-      cpu: "500m"
-      # -- Memory limit for API containers
-      memory: "512Mi"
   admin:
     # -- Admin API domain
     domain: ""

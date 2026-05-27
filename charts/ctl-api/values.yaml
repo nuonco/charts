@@ -54,12 +54,12 @@ api:
   liveness_probe: {}
   # -- Readiness probe configuration for API deployments
   readiness_probe: {}
-  # -- Minimum number of domains for topology spread constraints
-  minDomains: 1
   # -- Node selector for API pods
   nodeSelector: {}
   # -- Tolerations for API pods
   tolerations: []
+  # -- Topology spread constraints for API pods (applied to admin, auth, public, runner, startup)
+  topologySpreadConstraints: []
   resources:
     requests:
       # -- CPU request for API containers
@@ -160,6 +160,8 @@ worker:
   nodeSelector: {}
   # -- Tolerations for worker pods
   tolerations: []
+  # -- Topology spread constraints for worker pods
+  topologySpreadConstraints: []
   autoscaling:
     # -- Target CPU utilization for worker autoscaling
     targetCPUUtilizationPercentage: 80

@@ -32,27 +32,16 @@ spec:
       tolerations:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      # start: Topology Spread Constraints
+      {{- $ns := .namespace }}
+      {{- with $.Values.worker.topologySpreadConstraints }}
       topologySpreadConstraints:
-        - maxSkew: 1
-          topologyKey: "topology.kubernetes.io/zone"
-          whenUnsatisfiable: DoNotSchedule
-          matchLabelKeys:
-            - pod-template-hash
-          labelSelector:
-            matchLabels:
-              {{- /* plucked from common.workerSelectorLabels */}}
-              app.kubernetes.io/name: {{ include "common.name" $ }}-worker
-              app.nuon.co/worker-namespace: {{ .namespace }}
-        - maxSkew: 2
-          topologyKey: "kubernetes.io/hostname"
-          whenUnsatisfiable: ScheduleAnyway
-          labelSelector:
-            matchLabels:
-              {{- /* plucked from common.workerSelectorLabels */}}
-              app.kubernetes.io/name: {{ include "common.name" $ }}-worker
-              app.nuon.co/worker-namespace: {{ .namespace }}
-      # end: Topology Spread Constraints
+        {{- include "common.topologySpreadConstraints" (dict
+            "constraints" .
+            "labelSelector" (dict "matchLabels" (dict
+              "app.kubernetes.io/name" (printf "%s-worker" (include "common.name" $))
+              "app.nuon.co/worker-namespace" $ns))
+        ) | nindent 8 }}
+      {{- end }}
       containers:
         - name: {{ include "common.fullname" $ }}-worker-{{ .namespace }}
           ports:

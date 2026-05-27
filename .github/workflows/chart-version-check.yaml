@@ -1,0 +1,46 @@
+name: Chart Version Check
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "charts/**"
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Verify Chart.yaml version bumped for changed charts
+        run: |
+          set -euo pipefail
+          base="origin/${{ github.base_ref }}"
+          git fetch --no-tags --depth=1 origin "${{ github.base_ref }}"
+
+          failed=0
+          for chart_yaml in charts/*/Chart.yaml; do
+            chart_dir=$(dirname "$chart_yaml")
+            chart_name=$(basename "$chart_dir")
+
+            if git diff --quiet "$base" -- "$chart_dir"; then
+              continue
+            fi
+
+            new_version=$(grep '^version:' "$chart_yaml" | awk '{print $2}')
+            old_version=$(git show "$base:$chart_yaml" 2>/dev/null | grep '^version:' | awk '{print $2}' || true)
+
+            if [ -z "$old_version" ]; then
+              echo "OK    $chart_name: new chart at $new_version"
+            elif [ "$new_version" = "$old_version" ]; then
+              echo "FAIL  $chart_name: files changed but version not bumped (still $new_version)"
+              failed=1
+            else
+              echo "OK    $chart_name: $old_version -> $new_version"
+            fi
+          done
+
+          exit $failed

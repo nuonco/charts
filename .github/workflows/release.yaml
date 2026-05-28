@@ -9,7 +9,7 @@ on:
 
 permissions:
   packages: write
-  contents: read
+  contents: write
 
 env:
   REGISTRY: ghcr.io
@@ -38,3 +38,15 @@ jobs:
           chart_version=$(grep '^version:' "${chart_dir}/Chart.yaml" | awk '{print $2}')
           chart_name=${{ matrix.chart }}
           helm push "${chart_name}-${chart_version}.tgz" "oci://${{ env.REGISTRY }}/${{ env.REPO_OWNER }}/charts"
+
+      - name: Tag release for ${{ matrix.chart }}
+        run: |
+          chart_dir="charts/${{ matrix.chart }}"
+          chart_version=$(grep '^version:' "${chart_dir}/Chart.yaml" | awk '{print $2}')
+          tag_name="${{ matrix.chart }}-v${chart_version}"
+          if git ls-remote --exit-code --tags origin "${tag_name}" >/dev/null; then
+            echo "tag ${tag_name} already exists; skipping"
+            exit 0
+          fi
+          git tag "${tag_name}"
+          git push origin "refs/tags/${tag_name}"

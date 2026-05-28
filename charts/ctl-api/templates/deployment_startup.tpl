@@ -52,13 +52,7 @@ spec:
             - tail
             - -f
             - /dev/null
-          resources:
-            limits:
-              cpu: {{ .Values.api.resources.limits.cpu }}
-              memory: {{ .Values.api.resources.limits.memory }}
-            requests:
-              cpu: {{ .Values.api.resources.requests.cpu }}
-              memory: {{ .Values.api.resources.requests.memory }}
+          {{- include "common.apiResources" (dict "service" (dict) "fallback" .Values.api.resources) | nindent 10 }}
           envFrom:
             - configMapRef:
                 name: {{ include "common.fullname" . }}

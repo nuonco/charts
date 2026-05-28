@@ -79,13 +79,7 @@ spec:
             httpGet:
               path: {{ .Values.api.liveness_probe }}
               port: http-internal
-          resources:
-            limits:
-              cpu: {{ .Values.api.resources.limits.cpu }}
-              memory: {{ .Values.api.resources.limits.memory }}
-            requests:
-              cpu: {{ .Values.api.resources.requests.cpu }}
-              memory: {{ .Values.api.resources.requests.memory }}
+          {{- include "common.apiResources" (dict "service" .Values.api.slack "fallback" .Values.api.resources) | nindent 10 }}
           envFrom:
             - configMapRef:
                 name: {{ include "common.fullname" . }}

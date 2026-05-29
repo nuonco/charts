@@ -101,10 +101,22 @@ api:
       # -- Target memory utilization for auth API autoscaling
       targetMemoryUtilizationPercentage: 80
   dashboard_admin:
+    # -- Run the dashboard-admin workload (Deployment + ClusterIP Service + HPA).
+    # The Service is always cluster-internal, so the dashboard-ui chart can proxy
+    # to it regardless of whether the ALB below is enabled.
     enabled: false
+    # -- Dashboard admin container port
     port: 8085
-    domain: "xyz.com"
-    domain_certificate: "xyz.com"
+    # -- Expose dashboard-admin via a dedicated internet-facing ALB. Set
+    # `enabled: false` to keep it reachable only inside the cluster (e.g. proxied
+    # by the dashboard-ui service).
+    alb:
+      # -- Whether to create the internet-facing ALB ingress
+      enabled: false
+      # -- Public domain for the ALB (external-dns hostname)
+      domain: ""
+      # -- TLS certificate ARN (AWS) or name (GCP) for the ALB
+      domain_certificate: ""
     autoscaling:
       minReplicas: 2
       maxReplicas: 4

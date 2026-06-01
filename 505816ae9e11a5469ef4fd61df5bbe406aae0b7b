@@ -1,0 +1,23 @@
+charts/ctl-api/Chart.yaml
+  8728b71eabe58a66 6
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.1.9",
+  "base_commit_sha": "505816ae9e11a5469ef4fd61df5bbe406aae0b7b",
+  "prompts": {
+    "8728b71eabe58a66": {
+      "agent_id": {
+        "tool": "amp",
+        "id": "TU-033R0Tc4TlYNJWOLn3cdm3",
+        "model": "unknown"
+      },
+      "human_author": "Harsh <harsh@nuon.co>",
+      "messages": [],
+      "total_additions": 1,
+      "total_deletions": 1,
+      "accepted_lines": 1,
+      "overriden_lines": 0
+    }
+  }
+}

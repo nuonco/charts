@@ -64,13 +64,7 @@ spec:
             httpGet:
               path: {{ .Values.ui.liveness_probe}}
               port: http
-          resources:
-            limits:
-              cpu: {{ .Values.ui.resources.limits.cpu }}
-              memory: {{ .Values.ui.resources.limits.memory }}
-            requests:
-              cpu: {{ .Values.ui.resources.requests.cpu }}
-              memory: {{ .Values.ui.resources.requests.memory }}
+          {{- include "common.uiResources" .Values.ui.resources | nindent 10 }}
           envFrom:
             - configMapRef:
                 name: {{ include "common.fullname" . }}

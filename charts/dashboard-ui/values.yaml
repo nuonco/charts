@@ -42,6 +42,8 @@ ui:
   nodeSelector: {}
   # -- Tolerations for UI pods
   tolerations: []
+  # -- Resources for the ui deployment. Both `requests` and `limits` are
+  # optional and fully overridable — either sub-block can be omitted entirely.
   resources:
     requests:
       # -- CPU request for UI containers

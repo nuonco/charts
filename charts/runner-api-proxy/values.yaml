@@ -1,0 +1,34 @@
+# -- Nuon runner API URL to proxy to
+upstream:
+  url: "https://runner-api.nuon.co"
+
+replicaCount: 2
+
+image:
+  repository: nginx
+  tag: "1.27-alpine"
+  pullPolicy: IfNotPresent
+
+service:
+  type: ClusterIP
+  port: 80
+  containerPort: 8080
+
+ingress:
+  # -- Enable ingress (required to expose the proxy on a custom domain)
+  enabled: false
+  # -- Ingress class (e.g. nginx, alb, gce)
+  className: ""
+  annotations: {}
+  host: ""
+  tls:
+    enabled: false
+    secretName: ""
+
+resources:
+  requests:
+    cpu: "100m"
+    memory: "128Mi"
+  limits:
+    cpu: "500m"
+    memory: "256Mi"

@@ -15,7 +15,7 @@ Once deployed, set both `runner_api_url` and `public_api_url` in your app's `run
 
 - Kubernetes cluster with an ingress controller (nginx, ALB, GCE, etc.)
 - A domain you control pointing at the cluster's ingress
-- TLS certificate (cert-manager recommended)
+- TLS certificate (ACM on AWS, cert-manager elsewhere)
 - Nuon runner API URL and public API URL (provided by Nuon)
 
 ## Installation
@@ -54,6 +54,35 @@ ingress:
 helm install runner-api-proxy oci://ghcr.io/nuonco/charts/runner-api-proxy -f values.yaml
 ```
 
+## Example: EKS with AWS Load Balancer Controller + external-dns
+
+If you're running on EKS with the AWS Load Balancer Controller and external-dns, use ALB ingress with an ACM certificate. external-dns will automatically create the Route 53 record when the ingress is applied.
+
+```yaml
+# values.yaml
+upstream:
+  runnerAPIURL: "https://runner-api.nuon.co"
+  publicAPIURL: "https://api.nuon.co"
+
+ingress:
+  enabled: true
+  className: alb
+  host: runner-api.acme.com
+  annotations:
+    alb.ingress.kubernetes.io/scheme: internet-facing
+    alb.ingress.kubernetes.io/target-type: ip
+    alb.ingress.kubernetes.io/listen-ports: '[{"HTTPS":443}]'
+    alb.ingress.kubernetes.io/certificate-arn: arn:aws:acm:us-east-1:123456789:certificate/your-cert-arn
+    alb.ingress.kubernetes.io/healthcheck-path: /healthz
+    alb.ingress.kubernetes.io/healthcheck-interval-seconds: "5"
+    alb.ingress.kubernetes.io/healthcheck-timeout-seconds: "4"
+    alb.ingress.kubernetes.io/healthy-threshold-count: "2"
+    alb.ingress.kubernetes.io/unhealthy-threshold-count: "2"
+    external-dns.alpha.kubernetes.io/hostname: runner-api.acme.com
+```
+
+> **Note:** `healthcheck-timeout-seconds` must be less than `healthcheck-interval-seconds`.
+
 ## Nuon app config
 
 In your app's `runner.toml`, set both URLs to your proxy domain:
@@ -83,19 +112,3 @@ Both point at the same proxy — the chart's routing rules send each request to 
 | `ingress.tls.enabled` | Enable TLS on the ingress | `false` |
 | `ingress.tls.secretName` | TLS secret name | `""` |
 | `resources` | Pod resource requests/limits | see values.yaml |
-
-## DNS
-
-Point your domain at the cluster ingress (LoadBalancer IP or hostname). Example with external-dns:
-
-```yaml
-ingress:
-  annotations:
-    external-dns.alpha.kubernetes.io/hostname: runner-api.acme.com
-```
-
-Or manually:
-
-```
-runner-api.acme.com → CNAME → <ingress-load-balancer-hostname>
-```

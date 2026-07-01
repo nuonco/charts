@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "runner-api-proxy.fullname" . }}
+  labels:
+    {{- include "runner-api-proxy.labels" . | nindent 4 }}
+spec:
+  type: {{ .Values.service.type }}
+  ports:
+    - port: {{ .Values.service.port }}
+      targetPort: {{ .Values.service.containerPort }}
+      protocol: TCP
+  selector:
+    {{- include "runner-api-proxy.selectorLabels" . | nindent 4 }}

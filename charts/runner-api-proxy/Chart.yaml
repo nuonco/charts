@@ -1,0 +1,9 @@
+---
+apiVersion: v2
+name: runner-api-proxy
+description: Reverse proxy for white-labeling the Nuon runner API behind a custom domain
+type: application
+version: 0.1.0
+appVersion: "0.1.0"
+
+dependencies: []

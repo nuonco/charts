@@ -19,6 +19,12 @@ data:
           add_header Content-Type text/plain;
         }
 
+        location = /robots.txt {
+          access_log off;
+          return 200 "User-agent: *\nDisallow: /\n";
+          add_header Content-Type text/plain;
+        }
+
         location / {
           proxy_pass {{ .Values.upstream.url }};
           proxy_ssl_server_name on;

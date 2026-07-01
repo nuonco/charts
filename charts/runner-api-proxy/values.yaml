@@ -1,6 +1,8 @@
-# -- Nuon runner API URL to proxy to
 upstream:
-  url: "https://runner-api.nuon.co"
+  # -- Nuon runner API URL to proxy to (set runner_api_url in app runner config to this chart's domain)
+  runnerAPIURL: "https://runner-api.nuon.co"
+  # -- Nuon public API URL to proxy to (set public_api_url in app runner config to this chart's domain)
+  publicAPIURL: "https://api.nuon.co"
 
 replicaCount: 2
 

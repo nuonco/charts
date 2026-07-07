@@ -1,4 +1,4 @@
-{{- if and .Values.api.dashboard_admin.enabled .Values.api.dashboard_admin.alb.enabled .Values.gcp.enabled }}
+{{- if and .Values.api.dashboard_admin.enabled .Values.gcp.enabled }}
 ---
 apiVersion: gateway.networking.k8s.io/v1
 kind: HTTPRoute
@@ -14,16 +14,12 @@ spec:
       name: external-gateway
       sectionName: https
   hostnames:
-    - {{ .Values.api.dashboard_admin.alb.domain | trimSuffix "." }}
+    - {{ .Values.api.dashboard_admin.domain | trimSuffix "." }}
   rules:
     - backendRefs:
         - name: {{ include "common.fullname" . }}-dashboard-admin
           port: 80
 ---
-# Without this, the GKE Gateway health-checks the dashboard-admin NEG with its
-# default (GET / on the serving port), which the dashboard admin does not answer
-# 200 on, so the NEG never goes healthy and the ALB returns "no healthy
-# upstream". Mirrors the per-service HealthCheckPolicies in gcp_gateway.tpl.
 apiVersion: networking.gke.io/v1
 kind: HealthCheckPolicy
 metadata:

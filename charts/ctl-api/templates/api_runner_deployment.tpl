@@ -24,6 +24,12 @@ spec:
       serviceAccountName: {{ .Values.serviceAccount.name }}
       automountServiceAccountToken: true
 
+      # assumption is that we're using fqdn everywhere
+      dnsConfig:
+        options:
+          - name: ndots
+            value: "1"
+
       # start: NodePool Selection
       {{- with .Values.api.nodeSelector }}
       nodeSelector:

@@ -49,6 +49,10 @@ spec:
       containers:
         - name: {{ include "common.fullname" . }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          {{- with .Values.ui.securityContext }}
+          securityContext:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
           ports:
             - name: http
               containerPort: {{ .Values.ui.port }}

@@ -38,6 +38,8 @@ ui:
   liveness_probe: /livez
   # -- Readiness probe path
   readiness_probe: /readyz
+  # -- Container security context for the UI container
+  securityContext: {}
   # -- Node selector for UI pods
   nodeSelector: {}
   # -- Tolerations for UI pods

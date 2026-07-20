@@ -1,4 +1,4 @@
-{{- if and .Values.api.dashboard_admin.enabled .Values.gcp.enabled }}
+{{- if and .Values.api.dashboard_admin.enabled .Values.api.dashboard_admin.alb.enabled .Values.gcp.enabled }}
 ---
 apiVersion: gateway.networking.k8s.io/v1
 kind: HTTPRoute

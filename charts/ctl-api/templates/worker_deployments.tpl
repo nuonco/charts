@@ -24,11 +24,11 @@ spec:
     spec:
       serviceAccountName: {{ $.Values.serviceAccount.name }}
       automountServiceAccountToken: true
-      {{- with $.Values.worker.nodeSelector }}
+      {{- with (default $.Values.worker.nodeSelector .nodeSelector) }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      {{- with $.Values.worker.tolerations }}
+      {{- with (default $.Values.worker.tolerations .tolerations) }}
       tolerations:
         {{- toYaml . | nindent 8 }}
       {{- end }}

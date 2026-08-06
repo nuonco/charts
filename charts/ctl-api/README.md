@@ -1,6 +1,6 @@
 # ctl-api
 
-![Version: 0.1.0](https://img.shields.io/badge/Version-0.1.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 0.0.1](https://img.shields.io/badge/AppVersion-0.0.1-informational?style=flat-square)
+![Version: 0.6.0](https://img.shields.io/badge/Version-0.6.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 0.0.1](https://img.shields.io/badge/AppVersion-0.0.1-informational?style=flat-square)
 
 A helm chart for deploying the ctl-api (api and workers).
 
@@ -130,6 +130,16 @@ The `env` map is passed directly into the ConfigMap consumed by all API and work
 | api.auth.domain | string | `""` | Auth API domain |
 | api.auth.domain_certificate | string | `""` | Auth API TLS certificate ARN (AWS) or name (GCP) |
 | api.auth.port | int | `8080` | Auth API container port |
+| api.dashboard_admin.alb | object | `{"domain":"","domain_certificate":"","enabled":false}` | Expose dashboard-admin via a dedicated internet-facing ALB. Set `enabled: false` to keep it reachable only inside the cluster (e.g. proxied by the dashboard-ui service). |
+| api.dashboard_admin.alb.domain | string | `""` | Public domain for the ALB (external-dns hostname) |
+| api.dashboard_admin.alb.domain_certificate | string | `""` | TLS certificate ARN (AWS) or name (GCP) for the ALB |
+| api.dashboard_admin.alb.enabled | bool | `false` | Whether to create the internet-facing ALB ingress |
+| api.dashboard_admin.autoscaling.maxReplicas | int | `4` |  |
+| api.dashboard_admin.autoscaling.minReplicas | int | `2` |  |
+| api.dashboard_admin.autoscaling.targetCPUUtilizationPercentage | int | `60` |  |
+| api.dashboard_admin.autoscaling.targetMemoryUtilizationPercentage | int | `75` |  |
+| api.dashboard_admin.enabled | bool | `false` | Run the dashboard-admin workload (Deployment + ClusterIP Service + HPA). The Service is always cluster-internal, so the dashboard-ui chart can proxy to it regardless of whether the ALB below is enabled. |
+| api.dashboard_admin.port | int | `8085` | Dashboard admin container port |
 | api.liveness_probe | object | `{}` | Liveness probe configuration for API deployments |
 | api.nodeSelector | object | `{}` | Node selector for API pods |
 | api.public.autoscaling.maxReplicas | int | `3` | Maximum replicas for public API |
@@ -140,8 +150,7 @@ The `env` map is passed directly into the ConfigMap consumed by all API and work
 | api.public.domain_certificate | string | `""` | Public API TLS certificate ARN (AWS) or name (GCP) |
 | api.public.port | int | `8080` | Public API container port |
 | api.readiness_probe | object | `{}` | Readiness probe configuration for API deployments |
-| api.resources.limits.cpu | string | `"500m"` | CPU limit for API containers |
-| api.resources.limits.memory | string | `"512Mi"` | Memory limit for API containers |
+| api.resources | object | `{"requests":{"cpu":"100m","memory":"128Mi"}}` | Default resources for every api deployment. Each api.<service> (public, admin, runner, auth, dashboard_admin, slack) can override this block — individual fields deep-merge over these defaults. `limits` is optional and can be omitted globally or per service. |
 | api.resources.requests.cpu | string | `"100m"` | CPU request for API containers |
 | api.resources.requests.memory | string | `"128Mi"` | Memory request for API containers |
 | api.runner.autoscaling.maxReplicas | int | `3` | Maximum replicas for runner API |
@@ -151,6 +160,10 @@ The `env` map is passed directly into the ConfigMap consumed by all API and work
 | api.runner.domain | string | `""` | Runner API domain |
 | api.runner.domain_certificate | string | `""` | Runner API TLS certificate ARN (AWS) or name (GCP) |
 | api.runner.port | int | `8080` | Runner API container port |
+| api.slack.domain | string | `""` | Slack listener domain (e.g. slack.<root_domain>) |
+| api.slack.domain_certificate | string | `""` | Slack listener TLS certificate ARN (AWS) or name (GCP) |
+| api.slack.enabled | bool | `false` | Enable the Slack integration listener (deployment, service, ALB) |
+| api.slack.port | int | `8089` | Slack listener container port |
 | api.tolerations | list | `[]` | Tolerations for API pods |
 | api.topologySpreadConstraints | list | `[]` | Topology spread constraints for API pods (applied to admin, auth, public, runner, startup) |
 | auth.enabled | bool | `false` | Enable the auth API endpoint |
@@ -168,6 +181,8 @@ The `env` map is passed directly into the ConfigMap consumed by all API and work
 | serviceAccount.annotations | object | `{}` | Annotations to add to the service account |
 | serviceAccount.enabled | bool | `true` | Whether to create and use a service account |
 | serviceAccount.name | string | `""` | Service account name |
+| startup.enabled | bool | `true` | Run the startup job (database migrations) as a Helm hook before install, upgrade, and rollback. The release is blocked if the job fails, so unmigrated code never rolls out. |
+| startup.resources | object | `{}` | Resources for the startup hook job. Falls back to `api.resources`. |
 | worker.autoscaling.targetCPUUtilizationPercentage | int | `80` | Target CPU utilization for worker autoscaling |
 | worker.autoscaling.targetMemoryUtilizationPercentage | int | `80` | Target memory utilization for worker autoscaling |
 | worker.instances | list | `[]` | Worker instance definitions. Each entry creates a separate Deployment. Example: ```yaml instances:   - namespace: my-temporal-ns     command: ["./worker", "--namespace", "my-temporal-ns"]     resources:       requests:         cpu: "200m"         memory: "256Mi" ``` |
@@ -176,5 +191,3 @@ The `env` map is passed directly into the ConfigMap consumed by all API and work
 | worker.tolerations | list | `[]` | Tolerations for worker pods |
 | worker.topologySpreadConstraints | list | `[]` | Topology spread constraints for worker pods |
 
-----------------------------------------------
-Autogenerated from chart metadata using [helm-docs v1.14.2](https://github.com/norwoodj/helm-docs/releases/v1.14.2)

@@ -49,6 +49,14 @@ auth:
   # -- Secrets specific to the auth API
   envSecrets: []
 
+startup:
+  # -- Run the startup job (database migrations) as a Helm hook before
+  # install, upgrade, and rollback. The release is blocked if the job fails,
+  # so unmigrated code never rolls out.
+  enabled: true
+  # -- Resources for the startup hook job. Falls back to `api.resources`.
+  resources: {}
+
 api:
   # -- Liveness probe configuration for API deployments
   liveness_probe: {}

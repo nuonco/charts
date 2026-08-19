@@ -44,6 +44,8 @@ spec:
               (dict "app.nuon.co/name" (printf "%s-auth" (include "common.fullname" $))))
         ) | nindent 8 }}
       {{- end }}
+      volumes:
+        {{- include "common.kafkaCertVolumes" . | nindent 8 }}
       containers:
         - name: {{ include "common.fullname" . }}-auth
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
@@ -63,6 +65,8 @@ spec:
               path: {{ .Values.api.liveness_probe }}
               port: http-internal
           {{- include "common.apiResources" (dict "service" .Values.api.auth "fallback" .Values.api.resources) | nindent 10 }}
+          volumeMounts:
+            {{- include "common.kafkaCertVolumeMounts" . | nindent 12 }}
           envFrom:
             - configMapRef:
                 name: {{ include "common.fullname" . }}

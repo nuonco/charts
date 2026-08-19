@@ -56,6 +56,8 @@ spec:
               {{- /* plucked from common.apiSelectorLabels */}}
               app.nuon.co/name: {{ include "common.fullname" . }}-dashboard-admin
       # end: Topology Spread Constraints
+      volumes:
+        {{- include "common.kafkaCertVolumes" . | nindent 8 }}
       containers:
         - name: {{ include "common.fullname" . }}-dashboard-admin
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
@@ -78,6 +80,8 @@ spec:
               path: {{ .Values.api.liveness_probe }}
               port: http-internal
           {{- include "common.apiResources" (dict "service" .Values.api.dashboard_admin "fallback" .Values.api.resources) | nindent 10 }}
+          volumeMounts:
+            {{- include "common.kafkaCertVolumeMounts" . | nindent 12 }}
           envFrom:
             - configMapRef:
                 name: {{ include "common.fullname" . }}

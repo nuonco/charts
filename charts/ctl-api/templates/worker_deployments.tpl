@@ -42,6 +42,8 @@ spec:
               "app.nuon.co/worker-namespace" $ns))
         ) | nindent 8 }}
       {{- end }}
+      volumes:
+        {{- include "common.kafkaCertVolumes" $ | nindent 8 }}
       containers:
         - name: {{ include "common.fullname" $ }}-worker-{{ .namespace }}
           ports:
@@ -51,6 +53,8 @@ spec:
           image: "{{ $.Values.image.repository }}:{{ $.Values.image.tag }}"
           command: {{- .command  | toYaml | nindent 14}}
           resources: {{ merge (default (dict) .resources) $.Values.worker.resources | toYaml | nindent 14 }}
+          volumeMounts:
+            {{- include "common.kafkaCertVolumeMounts" $ | nindent 12 }}
           envFrom:
             - configMapRef:
                 name: {{ include "common.fullname" $ }}

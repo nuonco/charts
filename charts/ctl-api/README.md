@@ -10,6 +10,7 @@ This chart deploys the ctl-api, which consists of:
 
 - **API servers** — admin, auth, public, and runner endpoints, each behind their own ingress/ALB
 - **Workers** — Temporal worker deployments, dynamically created from `worker.instances`
+- **Consumers** — Kafka consumer deployments, dynamically created from `consumer.instances`
 
 The chart supports both AWS (ALB-based ingress) and GCP (Gateway API) deployments.
 
@@ -107,6 +108,13 @@ The `env` map is passed directly into the ConfigMap consumed by all API and work
 | `GITHUB_APP_ID`                                   | yes      | GitHub App ID                                       |
 | `GITHUB_APP_KEY`                                  | yes      | GitHub App private key (via `envSecrets`)           |
 | `INTEGRATION_GITHUB_INSTALL_ID`                   | no       | GitHub App installation ID                          |
+| **Kafka**                                         |          |                                                     |
+| `KAFKA_ENABLED`                                   | no       | Produce to and consume from Kafka. While `false` the producer no-ops and every path it fronts takes its legacy inline ClickHouse write, and the consumers run healthy holding no partitions. |
+| `KAFKA_BROKERS`                                   | no       | Bootstrap address, e.g. `nuon-kafka-bootstrap.kafka.svc.cluster.local:9093` |
+| `KAFKA_SECURITY_PROTOCOL`                         | no       | `SSL` for mTLS. Not `SASL_SSL` — mTLS is not a SASL mechanism.               |
+| `KAFKA_TLS_CA_PATH`                               | no       | Path to `ca.crt`, from the `kafka.certs.caSecret` mount                      |
+| `KAFKA_TLS_CERT_PATH`                             | no       | Path to `user.crt`, from the `kafka.certs.userSecret` mount                  |
+| `KAFKA_TLS_KEY_PATH`                              | no       | Path to `user.key`, from the `kafka.certs.userSecret` mount                  |
 | **Misc**                                          |          |                                                     |
 | `EVALUATION_JOURNEY_ENABLED`                      | no       | Enable evaluation journey feature                   |
 | `INTERNAL_SLACK_WEBHOOK_URL`                      | no       | Slack webhook URL for internal notifications        |
@@ -155,6 +163,13 @@ The `env` map is passed directly into the ConfigMap consumed by all API and work
 | api.topologySpreadConstraints | list | `[]` | Topology spread constraints for API pods (applied to admin, auth, public, runner, startup) |
 | auth.enabled | bool | `false` | Enable the auth API endpoint |
 | auth.envSecrets | list | `[]` | Secrets specific to the auth API |
+| consumer | object | no consumers | Kafka consumer deployments. Each entry creates a Deployment plus a pinned HPA. Named for what they consume rather than where they write; `--name` takes a list, so consumers that should scale and fail together can share a pod. |
+| consumer.autoscaling.targetCPUUtilizationPercentage | int | `75` | Target CPU utilization. Inert while every instance has `minReplicas == maxReplicas`; see the header in `consumer_hpas.tpl` before relying on it, and do not add a memory metric. |
+| consumer.instances | list | `[]` | Consumer instance definitions. Each entry creates a separate Deployment. Example: ```yaml instances:   - name: heartbeats     replicas: 4     command: ["/bin/service", "consumer", "--name=heartbeats"]     resources:       requests:         cpu: "200m"         memory: "256Mi" ``` |
+| consumer.nodeSelector | object | `{}` | Node selector for consumer pods |
+| consumer.resources | object | `{}` | Default resource requests/limits for all consumers (can be overridden per instance) |
+| consumer.tolerations | list | `[]` | Tolerations for consumer pods |
+| consumer.topologySpreadConstraints | list | `[]` | Topology spread constraints for consumer pods. Scoped per instance, so one consumer's placement never constrains another's. |
 | env | object | `{}` | Environment variables set via the ConfigMap (key/value pairs) |
 | envSecrets | list | `[]` | Secrets to inject as environment variables Example: ```yaml envSecrets:   - name: SECRET_KEY     valueFrom:       name: my-secret       key: secret-key ``` |
 | environment | string | `""` | Deployment environment name (e.g. `production`, `staging`) |
@@ -164,6 +179,9 @@ The `env` map is passed directly into the ConfigMap consumed by all API and work
 | gcp.enabled | bool | `false` | Enable GCP ingress resources (Gateway API). Requires the Gateway API and `networking.gke.io` CRDs to be installed on the cluster. |
 | image.repository | string | `""` | Container image repository |
 | image.tag | string | `""` | Container image tag |
+| kafka | object | - | Kafka client configuration. The connection itself is configured through `env` (`KAFKA_ENABLED`, `KAFKA_BROKERS`, `KAFKA_SECURITY_PROTOCOL` and the `KAFKA_TLS_*` paths); this block only names the cert secrets. The certs are mounted unconditionally into every pod that produces or consumes. Both are mounted `optional: true`, so an install where Kafka has not been provisioned yet — or where Reflector has not mirrored the secrets into this namespace yet — still starts normally; the volumes are simply empty and nothing reads them while `KAFKA_ENABLED` is false. |
+| kafka.certs.caSecret | string | `"nuon-cluster-ca-cert"` | Secret holding `ca.crt`, used to verify the brokers. Created by Strimzi in the Kafka namespace as `<cluster>-cluster-ca-cert` and mirrored into this namespace. Derived from the Kafka CR name, so it is the same in every environment. |
+| kafka.certs.userSecret | string | `"ctl-api"` | Secret holding `user.crt` and `user.key`, this client's own identity. Created by Strimzi from the `KafkaUser` of the same name and mirrored into this namespace. |
 | nameOverride | string | `""` | Override the chart name |
 | serviceAccount.annotations | object | `{}` | Annotations to add to the service account |
 | serviceAccount.enabled | bool | `true` | Whether to create and use a service account |

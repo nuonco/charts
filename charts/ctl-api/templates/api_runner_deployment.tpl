@@ -47,6 +47,7 @@ spec:
         - name: iid-certs
           configMap:
             name: {{ include "common.fullname" . }}-iid-certs
+        {{- include "common.kafkaCertVolumes" . | nindent 8 }}
       containers:
         - name: {{ include "common.fullname" . }}-runner
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
@@ -73,6 +74,7 @@ spec:
             - name: iid-certs
               mountPath: /etc/nuon/iid-certs
               readOnly: true
+            {{- include "common.kafkaCertVolumeMounts" . | nindent 12 }}
           envFrom:
             - configMapRef:
                 name: {{ include "common.fullname" . }}

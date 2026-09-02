@@ -36,7 +36,8 @@ spec:
       {{- end }}
       # end: NodePool Selection
 
-      # start: Topology Spread Constraints
+      # Best-effort zone spread only. mcp is not on the critical path, so it
+      # takes no constraint that can leave a pod Pending.
       topologySpreadConstraints:
         - maxSkew: 1
           topologyKey: "topology.kubernetes.io/zone"
@@ -45,15 +46,6 @@ spec:
             matchLabels:
               {{- /* plucked from common.apiSelectorLabels */}}
               app.nuon.co/name: {{ include "common.fullname" . }}-mcp
-        - maxSkew: 2
-          minDomains: {{ .Values.api.minDomains }}
-          topologyKey: "kubernetes.io/hostname"
-          whenUnsatisfiable: DoNotSchedule
-          labelSelector:
-            matchLabels:
-              {{- /* plucked from common.apiSelectorLabels */}}
-              app.nuon.co/name: {{ include "common.fullname" . }}-mcp
-      # end: Topology Spread Constraints
       containers:
         - name: {{ include "common.fullname" . }}-mcp
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
@@ -116,7 +108,9 @@ metadata:
   name: {{ include "common.fullname" . }}-mcp
   namespace: {{ .Release.Namespace }}
 spec:
-  minAvailable: 1
+  # mcp can run a single replica, where minAvailable: 1 would block node drains
+  # forever.
+  maxUnavailable: 1
   selector:
     matchLabels:
       {{- include "common.apiSelectorLabels" . | nindent 6 }}

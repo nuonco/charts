@@ -10,7 +10,7 @@
 
 This chart deploys the ctl-api, which consists of:
 
-- **API servers** — admin, auth, public, and runner endpoints, each behind their own ingress/ALB
+- **API servers** — admin, auth, public, runner, slack, and mcp endpoints, each behind their own ingress/ALB
 - **Workers** — Temporal worker deployments, dynamically created from `worker.instances`
 
 The chart supports both AWS (ALB-based ingress) and GCP (Gateway API) deployments.
@@ -47,6 +47,7 @@ The `env` map is passed directly into the ConfigMap consumed by all API and work
 | `HTTP_PORT`                                       | no       | Public API listen port                              |
 | `INTERNAL_HTTP_PORT`                              | no       | Internal/admin API listen port                      |
 | `RUNNER_HTTP_PORT`                                | no       | Runner API listen port                              |
+| `MCP_HTTP_PORT`                                   | no       | MCP API listen port                                 |
 | `GRACEFUL_SHUTDOWN_TIMEOUT`                       | no       | Graceful shutdown duration (e.g. `10s`)             |
 | `MIDDLEWARES`                                     | yes      | Comma-separated middleware chain for the public API |
 | `RUNNER_MIDDLEWARES`                              | yes      | Comma-separated middleware chain for the runner API |

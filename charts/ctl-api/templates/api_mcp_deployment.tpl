@@ -1,27 +1,26 @@
-{{- if .Values.api.dashboard_admin.enabled }}
 ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "common.fullname" . }}-dashboard-admin
+  name: {{ include "common.fullname" . }}-mcp
   namespace: {{ .Release.Namespace }}
   labels:
     {{- include "common.apiLabels" . | nindent 4 }}
-    app.nuon.co/name: {{ include "common.fullname" . }}-dashboard-admin
+    app.nuon.co/name: {{ include "common.fullname" . }}-mcp
 spec:
   selector:
     matchLabels:
       {{- include "common.apiSelectorLabels" . | nindent 6 }}
-      app.nuon.co/name: {{ include "common.fullname" . }}-dashboard-admin
+      app.nuon.co/name: {{ include "common.fullname" . }}-mcp
   template:
     metadata:
       labels:
         {{- include "common.apiSelectorLabels" . | nindent 8 }}
-        app.nuon.co/name: {{ include "common.fullname" . }}-dashboard-admin
+        app.nuon.co/name: {{ include "common.fullname" . }}-mcp
         tags.datadoghq.com/service: ctl-api
       annotations:
         rollme: {{ randAlphaNum 5 | quote }}
-        ad.datadoghq.com/tags: '{"service_type":"api","service_deployment":"dashboard-admin"}'
+        ad.datadoghq.com/tags: '{"service_type":"api","service_deployment":"mcp"}'
     spec:
       serviceAccountName: {{ .Values.serviceAccount.name }}
       automountServiceAccountToken: true
@@ -37,7 +36,8 @@ spec:
       {{- end }}
       # end: NodePool Selection
 
-      # start: Topology Spread Constraints
+      # Best-effort zone spread only. mcp is not on the critical path, so it
+      # takes no constraint that can leave a pod Pending.
       topologySpreadConstraints:
         - maxSkew: 1
           topologyKey: "topology.kubernetes.io/zone"
@@ -45,25 +45,16 @@ spec:
           labelSelector:
             matchLabels:
               {{- /* plucked from common.apiSelectorLabels */}}
-              app.nuon.co/name: {{ include "common.fullname" . }}-dashboard-admin
-        - maxSkew: 2
-          minDomains: {{ .Values.api.minDomains }}
-          topologyKey: "kubernetes.io/hostname"
-          whenUnsatisfiable: DoNotSchedule
-          labelSelector:
-            matchLabels:
-              {{- /* plucked from common.apiSelectorLabels */}}
-              app.nuon.co/name: {{ include "common.fullname" . }}-dashboard-admin
-      # end: Topology Spread Constraints
+              app.nuon.co/name: {{ include "common.fullname" . }}-mcp
       containers:
-        - name: {{ include "common.fullname" . }}-dashboard-admin
+        - name: {{ include "common.fullname" . }}-mcp
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
           command:
             - /bin/service
-            - api-admin
+            - api-mcp
           ports:
             - name: http-internal
-              containerPort: {{ .Values.api.dashboard_admin.port }}
+              containerPort: {{ .Values.api.mcp.port }}
               protocol: TCP
             - name: pprof
               containerPort: 6060
@@ -76,7 +67,7 @@ spec:
             httpGet:
               path: {{ .Values.api.liveness_probe }}
               port: http-internal
-          {{- include "common.apiResources" (dict "service" .Values.api.dashboard_admin "fallback" .Values.api.resources) | nindent 10 }}
+          {{- include "common.apiResources" (dict "service" .Values.api.mcp "fallback" .Values.api.resources) | nindent 10 }}
           envFrom:
             - configMapRef:
                 name: {{ include "common.fullname" . }}
@@ -102,7 +93,7 @@ spec:
             - name: SERVICE_TYPE
               value: api
             - name: SERVICE_DEPLOYMENT
-              value: dashboard-admin
+              value: mcp
           lifecycle:
             preStop:
               exec:
@@ -114,12 +105,13 @@ spec:
 apiVersion: policy/v1
 kind: PodDisruptionBudget
 metadata:
-  name: {{ include "common.fullname" . }}-dashboard-admin
+  name: {{ include "common.fullname" . }}-mcp
   namespace: {{ .Release.Namespace }}
 spec:
-  minAvailable: 1
+  # mcp can run a single replica, where minAvailable: 1 would block node drains
+  # forever.
+  maxUnavailable: 1
   selector:
     matchLabels:
       {{- include "common.apiSelectorLabels" . | nindent 6 }}
-      app.nuon.co/name: {{ include "common.fullname" . }}-dashboard-admin
-{{- end }}
+      app.nuon.co/name: {{ include "common.fullname" . }}-mcp

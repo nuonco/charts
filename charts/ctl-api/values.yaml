@@ -61,7 +61,7 @@ api:
   # -- Topology spread constraints for API pods (applied to admin, auth, public, runner, startup)
   topologySpreadConstraints: []
   # -- Default resources for every api deployment. Each api.<service> (public,
-  # admin, runner, auth, dashboard_admin, slack) can override this block —
+  # admin, runner, auth, dashboard_admin, slack, mcp) can override this block —
   # individual fields deep-merge over these defaults. `limits` is optional and
   # can be omitted globally or per service.
   resources:
@@ -131,6 +131,22 @@ api:
     domain_certificate: ""
     # -- Slack listener container port
     port: 8089
+  mcp:
+    # -- MCP API domain (e.g. mcp.<root_domain>)
+    domain: ""
+    # -- MCP API TLS certificate ARN (AWS) or name (GCP)
+    domain_certificate: ""
+    # -- MCP API container port
+    port: 8088
+    autoscaling:
+      # -- Minimum replicas for MCP API
+      minReplicas: 1
+      # -- Maximum replicas for MCP API
+      maxReplicas: 2
+      # -- Target CPU utilization for MCP API autoscaling
+      targetCPUUtilizationPercentage: 60
+      # -- Target memory utilization for MCP API autoscaling
+      targetMemoryUtilizationPercentage: 75
   public:
     # -- Public API domain
     domain: ""

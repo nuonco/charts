@@ -14,13 +14,12 @@ spec:
       app.nuon.co/name: {{ include "common.fullname" . }}-mcp
   template:
     metadata:
-      annotations:
-        rollme: {{ randAlphaNum 5 | quote }}
       labels:
         {{- include "common.apiSelectorLabels" . | nindent 8 }}
         app.nuon.co/name: {{ include "common.fullname" . }}-mcp
         tags.datadoghq.com/service: ctl-api
       annotations:
+        rollme: {{ randAlphaNum 5 | quote }}
         ad.datadoghq.com/tags: '{"service_type":"api","service_deployment":"mcp"}'
     spec:
       serviceAccountName: {{ .Values.serviceAccount.name }}

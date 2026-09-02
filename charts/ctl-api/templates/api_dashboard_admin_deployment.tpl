@@ -15,13 +15,12 @@ spec:
       app.nuon.co/name: {{ include "common.fullname" . }}-dashboard-admin
   template:
     metadata:
-      annotations:
-        rollme: {{ randAlphaNum 5 | quote }}
       labels:
         {{- include "common.apiSelectorLabels" . | nindent 8 }}
         app.nuon.co/name: {{ include "common.fullname" . }}-dashboard-admin
         tags.datadoghq.com/service: ctl-api
       annotations:
+        rollme: {{ randAlphaNum 5 | quote }}
         ad.datadoghq.com/tags: '{"service_type":"api","service_deployment":"dashboard-admin"}'
     spec:
       serviceAccountName: {{ .Values.serviceAccount.name }}

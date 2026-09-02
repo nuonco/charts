@@ -112,3 +112,31 @@ spec:
           type: Utilization
           averageUtilization: {{ .Values.api.auth.autoscaling.targetMemoryUtilizationPercentage }}
 {{- end }}
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: {{ include "common.fullname" . }}-mcp
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "common.apiLabels" . | nindent 4 }}
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: {{ include "common.fullname" . }}-mcp
+  minReplicas: {{ .Values.api.mcp.autoscaling.minReplicas }}
+  maxReplicas: {{ .Values.api.mcp.autoscaling.maxReplicas }}
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: {{ .Values.api.mcp.autoscaling.targetCPUUtilizationPercentage }}
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          type: Utilization
+          averageUtilization: {{ .Values.api.mcp.autoscaling.targetMemoryUtilizationPercentage }}

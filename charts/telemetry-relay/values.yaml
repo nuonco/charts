@@ -1,0 +1,41 @@
+fullnameOverride: telemetry-relay
+
+replicaCount: 2
+
+image:
+  repository: ""
+  tag: ""
+  pullPolicy: IfNotPresent
+
+env:
+  NUON_TELEMETRY_ISSUER: ""
+  NUON_TELEMETRY_JWKS_URL: ""
+
+envSecrets: []
+
+gcp:
+  enabled: false
+
+aws:
+  enabled: false
+
+gateway:
+  name: external-gateway
+  namespace: ctl-api
+  hostname: ""
+
+ingress:
+  domain: ""
+  certificateArn: ""
+  groupName: ""
+
+resources:
+  requests:
+    cpu: 250m
+    memory: 640Mi
+  limits:
+    memory: 768Mi
+
+nodeSelector: {}
+tolerations: []
+affinity: {}

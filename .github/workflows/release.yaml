@@ -6,6 +6,7 @@ on:
       - main
     paths:
       - "charts/**"
+      - ".github/workflows/release.yaml"
 
 permissions:
   packages: write
@@ -23,6 +24,7 @@ jobs:
         chart:
           - ctl-api
           - dashboard-ui
+          - telemetry-relay
     steps:
       - uses: actions/checkout@v4
 

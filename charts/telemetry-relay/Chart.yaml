@@ -1,0 +1,6 @@
+apiVersion: v2
+name: telemetry-relay
+description: Authenticated OTLP/HTTP telemetry relay with optional GCP and AWS ingress
+type: application
+version: 0.1.0
+appVersion: "0.1.0"

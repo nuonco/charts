@@ -31,6 +31,8 @@ helm install ctl-api oci://ghcr.io/nuonco/charts/ctl-api --version <version>
 
 The `env` map is passed directly into the ConfigMap consumed by all API and worker pods. The following variables are supported by the ctl-api application:
 
+Every ctl-api container sets `service.instance.id` to its pod UID in `OTEL_RESOURCE_ATTRIBUTES`. Attributes supplied through `env.OTEL_RESOURCE_ATTRIBUTES` are appended last, allowing an explicit `service.instance.id` to override the pod UID default.
+
 
 | Variable                                          | Required | Description                                         |
 | ------------------------------------------------- | -------- | --------------------------------------------------- |

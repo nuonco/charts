@@ -20,7 +20,7 @@ serviceAccount:
   # -- Annotations to add to the service account
   annotations: {}
 
-# -- Environment variables set via the ConfigMap (key/value pairs)
+# -- Environment variables set via the ConfigMap (key/value pairs). OTEL_RESOURCE_ATTRIBUTES is appended after the pod UID-based service.instance.id, so caller attributes can override it.
 env: {}
 
 # -- Secrets to inject as environment variables

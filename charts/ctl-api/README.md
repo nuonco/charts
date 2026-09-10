@@ -23,6 +23,8 @@ helm install ctl-api oci://ghcr.io/nuonco/charts/ctl-api --version <version>
 
 The `env` map is passed directly into the ConfigMap consumed by all API and worker pods. The following variables are supported by the ctl-api application:
 
+Every ctl-api container sets `service.instance.id` to its pod UID in `OTEL_RESOURCE_ATTRIBUTES`. Attributes supplied through `env.OTEL_RESOURCE_ATTRIBUTES` are appended last, allowing an explicit `service.instance.id` to override the pod UID default.
+
 | Variable                                          | Required | Description                                         |
 | ------------------------------------------------- | -------- | --------------------------------------------------- |
 | **General**                                       |          |                                                     |
@@ -176,7 +178,7 @@ The `env` map is passed directly into the ConfigMap consumed by all API and work
 | api.topologySpreadConstraints | list | `[]` | Topology spread constraints for API pods (applied to admin, auth, public, runner, startup) |
 | auth.enabled | bool | `false` | Enable the auth API endpoint |
 | auth.envSecrets | list | `[]` | Secrets specific to the auth API |
-| env | object | `{}` | Environment variables set via the ConfigMap (key/value pairs) |
+| env | object | `{}` | Environment variables set via the ConfigMap (key/value pairs). OTEL_RESOURCE_ATTRIBUTES is appended after the pod UID-based service.instance.id, so caller attributes can override it. |
 | envSecrets | list | `[]` | Secrets to inject as environment variables Example: ```yaml envSecrets:   - name: SECRET_KEY     valueFrom:       name: my-secret       key: secret-key ``` |
 | environment | string | `""` | Deployment environment name (e.g. `production`, `staging`) |
 | fullnameOverride | string | `""` | Override the full release name |

@@ -23,6 +23,12 @@ serviceAccount:
 # -- Environment variables set via the ConfigMap (key/value pairs). OTEL_RESOURCE_ATTRIBUTES is appended after the pod UID-based service.instance.id, so caller attributes can override it.
 env: {}
 
+otel:
+  # -- Enable control-plane OTLP export (currently metrics). Datadog remains independent.
+  enabled: false
+  # -- HTTP(S) collector base URL, required when enabled. Uses HTTP/protobuf; omit /v1/metrics.
+  endpoint: ""
+
 # -- Secrets to inject as environment variables
 # @default -- `[]`
 # Example:

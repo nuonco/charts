@@ -1,6 +1,6 @@
 # ctl-api
 
-![Version: 0.6.0](https://img.shields.io/badge/Version-0.6.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 0.0.1](https://img.shields.io/badge/AppVersion-0.0.1-informational?style=flat-square)
+![Version: 0.7.0](https://img.shields.io/badge/Version-0.7.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 0.0.1](https://img.shields.io/badge/AppVersion-0.0.1-informational?style=flat-square)
 
 A helm chart for deploying the ctl-api (api and workers).
 
@@ -18,6 +18,50 @@ The chart supports both AWS (ALB-based ingress) and GCP (Gateway API) deployment
 ```bash
 helm install ctl-api oci://ghcr.io/nuonco/charts/ctl-api --version <version>
 ```
+
+## OpenTelemetry export
+
+Point the control plane at an independently deployed OTLP collector:
+
+```yaml
+otel:
+  enabled: true
+  endpoint: http://otel-collector.observability.svc.cluster.local:4318
+
+env:
+  OTEL_RESOURCE_ATTRIBUTES: "nuon.control_plane.id=cp-example,deployment.environment.name=production"
+```
+
+The chart configures all ctl-api API, worker, and startup containers with
+`OTEL_EXPORTER_OTLP_ENDPOINT` and the supported `http/protobuf` protocol. The
+application currently exports operational metrics. Use an image containing
+control-plane OTLP metrics support. Audit export remains separately enabled and
+workflow logs retain their stream-owned destinations. Datadog remains independent;
+other OTEL exporters in the same process may read the generic transport settings.
+
+`otel.enabled` defaults to `false`, which clears the generic endpoint even if an
+endpoint remains in `env`. When enabled, `otel.endpoint` must be an HTTP(S) base
+URL; the application appends `/v1/metrics`, retaining any base path. Use HTTPS
+across untrusted networks and allow API pods to reach the collector's receiver.
+The chart does not install a collector or configure its downstream destinations.
+
+The chart owns the endpoint and protocol. Use `otel` values rather than setting
+these through `env`; duplicate endpoint/protocol entries in `envSecrets` or
+workload `extraEnv` are rejected. Other SDK settings, such as
+`OTEL_EXPORTER_OTLP_TIMEOUT` and `OTEL_METRIC_EXPORT_INTERVAL`, can use `env`.
+For collector authentication, inject headers from an existing Kubernetes Secret:
+
+```yaml
+envSecrets:
+  - name: OTEL_EXPORTER_OTLP_HEADERS
+    valueFrom:
+      name: ctl-api-otel-auth
+      key: headers
+```
+
+Header values must follow OTEL percent-encoding rules. Metrics-specific transport
+overrides such as `OTEL_EXPORTER_OTLP_METRICS_ENDPOINT` are unsupported by the
+application; use the shared endpoint.
 
 ## Environment Variables
 
@@ -188,6 +232,8 @@ Every ctl-api container sets `service.instance.id` to its pod UID in `OTEL_RESOU
 | image.repository | string | `""` | Container image repository |
 | image.tag | string | `""` | Container image tag |
 | nameOverride | string | `""` | Override the chart name |
+| otel.enabled | bool | `false` | Enable control-plane OTLP export (currently metrics). Datadog remains independent. |
+| otel.endpoint | string | `""` | HTTP(S) collector base URL, required when enabled. Uses HTTP/protobuf; omit /v1/metrics. |
 | serviceAccount.annotations | object | `{}` | Annotations to add to the service account |
 | serviceAccount.enabled | bool | `true` | Whether to create and use a service account |
 | serviceAccount.name | string | `""` | Service account name |

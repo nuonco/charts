@@ -24,16 +24,16 @@ helm install ctl-api oci://ghcr.io/nuonco/charts/ctl-api --version <version>
 Disabled by default. To export metrics to an existing OTLP/HTTP collector:
 
 ```yaml
+environment: production
 otel:
   enabled: true
   endpoint: http://otel-collector.observability.svc.cluster.local:4318
   additional_resource_attributes:
     nuon.control_plane.id: cp-example
-    deployment.environment.name: production
 ```
 
 Use a base URL without `/v1/metrics` and an image with OTLP metrics support.
-Pod UID supplies the default instance identity. Datadog is unchanged.
+`environment` sets `deployment.environment.name`; pod UID supplies the instance ID.
 
 ## Environment Variables
 
@@ -202,8 +202,8 @@ The `env` map is passed directly into the ConfigMap consumed by all API and work
 | image.repository | string | `""` | Container image repository |
 | image.tag | string | `""` | Container image tag |
 | nameOverride | string | `""` | Override the chart name |
-| otel.additional_resource_attributes | object | `{}` | Additional OTEL resource attributes, appended after the pod-based instance identity. |
-| otel.enabled | bool | `false` | Enable control-plane OTLP export (currently metrics). Datadog remains independent. |
+| otel.additional_resource_attributes | object | `{}` | Additional OTEL resource attributes, overriding defaults. |
+| otel.enabled | bool | `false` | Enable control-plane OTLP export (currently metrics). |
 | otel.endpoint | string | `""` | HTTP(S) collector base URL, required when enabled. Uses HTTP/protobuf; omit /v1/metrics. |
 | serviceAccount.annotations | object | `{}` | Annotations to add to the service account |
 | serviceAccount.enabled | bool | `true` | Whether to create and use a service account |

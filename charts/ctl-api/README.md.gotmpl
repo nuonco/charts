@@ -32,16 +32,16 @@ helm install ctl-api oci://ghcr.io/nuonco/charts/ctl-api --version <version>
 Disabled by default. To export metrics to an existing OTLP/HTTP collector:
 
 ```yaml
+environment: production
 otel:
   enabled: true
   endpoint: http://otel-collector.observability.svc.cluster.local:4318
   additional_resource_attributes:
     nuon.control_plane.id: cp-example
-    deployment.environment.name: production
 ```
 
 Use a base URL without `/v1/metrics` and an image with OTLP metrics support.
-Pod UID supplies the default instance identity. Datadog is unchanged.
+`environment` sets `deployment.environment.name`; pod UID supplies the instance ID.
 
 ## Environment Variables
 

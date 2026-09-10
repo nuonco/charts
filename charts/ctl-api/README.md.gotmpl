@@ -27,10 +27,25 @@ The chart supports both AWS (ALB-based ingress) and GCP (Gateway API) deployment
 helm install ctl-api oci://ghcr.io/nuonco/charts/ctl-api --version <version>
 ```
 
+## OpenTelemetry export
+
+Disabled by default. To export metrics to an existing OTLP/HTTP collector:
+
+```yaml
+environment: production
+otel:
+  enabled: true
+  endpoint: http://otel-collector.observability.svc.cluster.local:4318
+  additional_resource_attributes:
+    nuon.control_plane.id: cp-example
+```
+
+Use a base URL without `/v1/metrics` and an image with OTLP metrics support.
+`environment` sets `deployment.environment.name`; pod UID supplies the instance ID.
+
 ## Environment Variables
 
 The `env` map is passed directly into the ConfigMap consumed by all API and worker pods. The following variables are supported by the ctl-api application:
-
 
 | Variable                                          | Required | Description                                         |
 | ------------------------------------------------- | -------- | --------------------------------------------------- |

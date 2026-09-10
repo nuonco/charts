@@ -23,6 +23,14 @@ serviceAccount:
 # -- Environment variables set via the ConfigMap (key/value pairs)
 env: {}
 
+otel:
+  # -- Enable control-plane OTLP export (currently metrics).
+  enabled: false
+  # -- HTTP(S) collector base URL, required when enabled. Uses HTTP/protobuf; omit /v1/metrics.
+  endpoint: ""
+  # -- Additional OTEL resource attributes, overriding defaults.
+  additional_resource_attributes: {}
+
 # -- Secrets to inject as environment variables
 # @default -- `[]`
 # Example:

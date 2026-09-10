@@ -1,6 +1,6 @@
 # ctl-api
 
-![Version: 0.6.0](https://img.shields.io/badge/Version-0.6.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 0.0.1](https://img.shields.io/badge/AppVersion-0.0.1-informational?style=flat-square)
+![Version: 0.7.0](https://img.shields.io/badge/Version-0.7.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 0.0.1](https://img.shields.io/badge/AppVersion-0.0.1-informational?style=flat-square)
 
 A helm chart for deploying the ctl-api (api and workers).
 
@@ -18,6 +18,22 @@ The chart supports both AWS (ALB-based ingress) and GCP (Gateway API) deployment
 ```bash
 helm install ctl-api oci://ghcr.io/nuonco/charts/ctl-api --version <version>
 ```
+
+## OpenTelemetry export
+
+Disabled by default. To export metrics to an existing OTLP/HTTP collector:
+
+```yaml
+environment: production
+otel:
+  enabled: true
+  endpoint: http://otel-collector.observability.svc.cluster.local:4318
+  additional_resource_attributes:
+    nuon.control_plane.id: cp-example
+```
+
+Use a base URL without `/v1/metrics` and an image with OTLP metrics support.
+`environment` sets `deployment.environment.name`; pod UID supplies the instance ID.
 
 ## Environment Variables
 
@@ -186,6 +202,9 @@ The `env` map is passed directly into the ConfigMap consumed by all API and work
 | image.repository | string | `""` | Container image repository |
 | image.tag | string | `""` | Container image tag |
 | nameOverride | string | `""` | Override the chart name |
+| otel.additional_resource_attributes | object | `{}` | Additional OTEL resource attributes, overriding defaults. |
+| otel.enabled | bool | `false` | Enable control-plane OTLP export (currently metrics). |
+| otel.endpoint | string | `""` | HTTP(S) collector base URL, required when enabled. Uses HTTP/protobuf; omit /v1/metrics. |
 | serviceAccount.annotations | object | `{}` | Annotations to add to the service account |
 | serviceAccount.enabled | bool | `true` | Whether to create and use a service account |
 | serviceAccount.name | string | `""` | Service account name |

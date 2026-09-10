@@ -66,6 +66,7 @@ spec:
             - configMapRef:
                 name: {{ include "common.fullname" . }}
           env:
+            {{- include "common.otelEnv" . | nindent 12 }}
           {{- range $envSecret := .Values.envSecrets }}
             - name: {{ $envSecret.name }}
               valueFrom:

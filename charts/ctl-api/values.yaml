@@ -20,7 +20,7 @@ serviceAccount:
   # -- Annotations to add to the service account
   annotations: {}
 
-# -- Environment variables set via the ConfigMap (key/value pairs). OTEL_RESOURCE_ATTRIBUTES is appended after the pod UID-based service.instance.id, so caller attributes can override it.
+# -- Environment variables set via the ConfigMap (key/value pairs)
 env: {}
 
 otel:
@@ -28,6 +28,8 @@ otel:
   enabled: false
   # -- HTTP(S) collector base URL, required when enabled. Uses HTTP/protobuf; omit /v1/metrics.
   endpoint: ""
+  # -- Additional OTEL resource attributes, appended after the pod-based instance identity.
+  additional_resource_attributes: {}
 
 # -- Secrets to inject as environment variables
 # @default -- `[]`

@@ -21,53 +21,23 @@ helm install ctl-api oci://ghcr.io/nuonco/charts/ctl-api --version <version>
 
 ## OpenTelemetry export
 
-Point the control plane at an independently deployed OTLP collector:
+Disabled by default. To export metrics to an existing OTLP/HTTP collector:
 
 ```yaml
 otel:
   enabled: true
   endpoint: http://otel-collector.observability.svc.cluster.local:4318
-
-env:
-  OTEL_RESOURCE_ATTRIBUTES: "nuon.control_plane.id=cp-example,deployment.environment.name=production"
+  additional_resource_attributes:
+    nuon.control_plane.id: cp-example
+    deployment.environment.name: production
 ```
 
-The chart configures all ctl-api API, worker, and startup containers with
-`OTEL_EXPORTER_OTLP_ENDPOINT` and the supported `http/protobuf` protocol. The
-application currently exports operational metrics. Use an image containing
-control-plane OTLP metrics support. Audit export remains separately enabled and
-workflow logs retain their stream-owned destinations. Datadog remains independent;
-other OTEL exporters in the same process may read the generic transport settings.
-
-`otel.enabled` defaults to `false`, which clears the generic endpoint even if an
-endpoint remains in `env`. When enabled, `otel.endpoint` must be an HTTP(S) base
-URL; the application appends `/v1/metrics`, retaining any base path. Use HTTPS
-across untrusted networks and allow API pods to reach the collector's receiver.
-The chart does not install a collector or configure its downstream destinations.
-
-The chart owns the endpoint and protocol. Use `otel` values rather than setting
-these through `env`; duplicate endpoint/protocol entries in `envSecrets` or
-workload `extraEnv` are rejected. Other SDK settings, such as
-`OTEL_EXPORTER_OTLP_TIMEOUT` and `OTEL_METRIC_EXPORT_INTERVAL`, can use `env`.
-For collector authentication, inject headers from an existing Kubernetes Secret:
-
-```yaml
-envSecrets:
-  - name: OTEL_EXPORTER_OTLP_HEADERS
-    valueFrom:
-      name: ctl-api-otel-auth
-      key: headers
-```
-
-Header values must follow OTEL percent-encoding rules. Metrics-specific transport
-overrides such as `OTEL_EXPORTER_OTLP_METRICS_ENDPOINT` are unsupported by the
-application; use the shared endpoint.
+Use a base URL without `/v1/metrics` and an image with OTLP metrics support.
+Pod UID supplies the default instance identity. Datadog is unchanged.
 
 ## Environment Variables
 
 The `env` map is passed directly into the ConfigMap consumed by all API and worker pods. The following variables are supported by the ctl-api application:
-
-Every ctl-api container sets `service.instance.id` to its pod UID in `OTEL_RESOURCE_ATTRIBUTES`. Attributes supplied through `env.OTEL_RESOURCE_ATTRIBUTES` are appended last, allowing an explicit `service.instance.id` to override the pod UID default.
 
 | Variable                                          | Required | Description                                         |
 | ------------------------------------------------- | -------- | --------------------------------------------------- |
@@ -222,7 +192,7 @@ Every ctl-api container sets `service.instance.id` to its pod UID in `OTEL_RESOU
 | api.topologySpreadConstraints | list | `[]` | Topology spread constraints for API pods (applied to admin, auth, public, runner, startup) |
 | auth.enabled | bool | `false` | Enable the auth API endpoint |
 | auth.envSecrets | list | `[]` | Secrets specific to the auth API |
-| env | object | `{}` | Environment variables set via the ConfigMap (key/value pairs). OTEL_RESOURCE_ATTRIBUTES is appended after the pod UID-based service.instance.id, so caller attributes can override it. |
+| env | object | `{}` | Environment variables set via the ConfigMap (key/value pairs) |
 | envSecrets | list | `[]` | Secrets to inject as environment variables Example: ```yaml envSecrets:   - name: SECRET_KEY     valueFrom:       name: my-secret       key: secret-key ``` |
 | environment | string | `""` | Deployment environment name (e.g. `production`, `staging`) |
 | fullnameOverride | string | `""` | Override the full release name |
@@ -232,6 +202,7 @@ Every ctl-api container sets `service.instance.id` to its pod UID in `OTEL_RESOU
 | image.repository | string | `""` | Container image repository |
 | image.tag | string | `""` | Container image tag |
 | nameOverride | string | `""` | Override the chart name |
+| otel.additional_resource_attributes | object | `{}` | Additional OTEL resource attributes, appended after the pod-based instance identity. |
 | otel.enabled | bool | `false` | Enable control-plane OTLP export (currently metrics). Datadog remains independent. |
 | otel.endpoint | string | `""` | HTTP(S) collector base URL, required when enabled. Uses HTTP/protobuf; omit /v1/metrics. |
 | serviceAccount.annotations | object | `{}` | Annotations to add to the service account |

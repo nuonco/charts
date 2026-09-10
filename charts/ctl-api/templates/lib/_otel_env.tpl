@@ -1,5 +1,8 @@
 {{- define "common.otelEnv" -}}
-{{- $attributes := get (default (dict) .Values.env) "OTEL_RESOURCE_ATTRIBUTES" | default "" -}}
+{{- $attributes := list "service.instance.id=$(POD_UID)" -}}
+{{- range $key, $value := .Values.otel.additional_resource_attributes -}}
+{{- $attributes = append $attributes (printf "%s=%v" $key $value) -}}
+{{- end -}}
 {{- if not (kindIs "bool" .Values.otel.enabled) -}}
 {{- fail "otel.enabled must be a boolean" -}}
 {{- end -}}
@@ -26,7 +29,7 @@
     fieldRef:
       fieldPath: metadata.uid
 - name: OTEL_RESOURCE_ATTRIBUTES
-  value: {{ printf "service.instance.id=$(POD_UID)%s" (ternary (printf ",%s" $attributes) "" (ne $attributes "")) | quote }}
+  value: {{ join "," $attributes | quote }}
 - name: OTEL_EXPORTER_OTLP_ENDPOINT
   value: {{ $endpoint | quote }}
 {{- if .Values.otel.enabled }}

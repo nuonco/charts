@@ -14,6 +14,7 @@ metadata:
     alb.ingress.kubernetes.io/listen-ports: '[{"HTTPS":443}]'
     alb.ingress.kubernetes.io/certificate-arn: {{ .Values.api.mcp.domain_certificate }}
     alb.ingress.kubernetes.io/aws-load-balancer-ssl-ports: https
+    alb.ingress.kubernetes.io/ssl-policy: ELBSecurityPolicy-TLS13-1-2-FIPS-2023-04
     alb.ingress.kubernetes.io/healthcheck-path: /livez
     alb.ingress.kubernetes.io/healthcheck-interval-seconds: '5'
     alb.ingress.kubernetes.io/healthcheck-timeout-seconds: '2'

@@ -15,3 +15,8 @@ spec:
     - name: health
       port: 13133
       targetPort: health
+    {{- if .Values.environmentReceiver.enabled }}
+    - name: environment
+      port: 5318
+      targetPort: environment
+    {{- end }}

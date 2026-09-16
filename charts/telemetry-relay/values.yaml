@@ -13,6 +13,9 @@ env:
 
 envSecrets: []
 
+environmentReceiver:
+  enabled: false
+
 gcp:
   enabled: false
 

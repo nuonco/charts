@@ -68,5 +68,3 @@ This is disabled by default: the receiver binds to loopback and port `5318` is o
 When enabled, port `5318` accepts unauthenticated telemetry from any workload that can reach the Service. The chart does not restrict in-cluster access. Neither AWS ingress nor GCP HTTPRoute exposes `5318`; public routing remains on the authenticated install receiver.
 
 The receiver has no durable queue; the upstream collector must handle retries and buffering.
-
-Render regression tests: `ruby scripts/test-relay-environment.rb` from the repository root.

@@ -5,4 +5,5 @@ metadata:
   labels:
     {{- include "telemetry-relay.labels" . | nindent 4 }}
 data:
-  {{- toYaml .Values.env | nindent 2 }}
+  {{- toYaml (omit .Values.env "NUON_TELEMETRY_ENVIRONMENT_ENDPOINT") | nindent 2 }}
+  NUON_TELEMETRY_ENVIRONMENT_ENDPOINT: {{ ternary "0.0.0.0:5318" "127.0.0.1:5318" .Values.environmentReceiver.enabled | quote }}

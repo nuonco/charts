@@ -58,3 +58,15 @@ ingress:
 This creates an internet-facing ALB Ingress with an HTTPS-only listener. `ingress.domain` and `ingress.certificateArn` are required only when AWS is enabled. Set `ingress.groupName` to join an existing ALB ingress group if needed.
 
 Both cloud integrations route exactly `/v1/logs`, `/v1/metrics`, and `/v1/traces`. The health endpoint on port `13133` is used by private pod and load-balancer health checks but is not routed publicly.
+
+## Private environment receiver
+
+With a relay image supporting `NUON_TELEMETRY_ENVIRONMENT_ENDPOINT` (Nuon `0.19.1181` or newer), set `environmentReceiver.enabled: true` to expose the unauthenticated environment OTLP/HTTP receiver on ClusterIP port `5318`. It forwards to the same backend configured by `envSecrets`, preserves control-plane identity, and marks telemetry as `nuon.telemetry.source=environment`. It does not use the install JWT receiver or require customer runner stack updates.
+
+This is disabled by default: the receiver binds to loopback and port `5318` is omitted from the Service. The chart owns the endpoint environment variable; do not override it through `envSecrets`.
+
+When enabled, port `5318` accepts unauthenticated telemetry from any workload that can reach the Service. The chart does not restrict in-cluster access. Neither AWS ingress nor GCP HTTPRoute exposes `5318`; public routing remains on the authenticated install receiver.
+
+The receiver has no durable queue; the upstream collector must handle retries and buffering.
+
+Render regression tests: `ruby scripts/test-relay-environment.rb` from the repository root.

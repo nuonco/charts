@@ -42,6 +42,11 @@ spec:
             - name: health
               containerPort: 13133
               protocol: TCP
+            {{- if .Values.environmentReceiver.enabled }}
+            - name: environment
+              containerPort: 5318
+              protocol: TCP
+            {{- end }}
           envFrom:
             - configMapRef:
                 name: {{ include "telemetry-relay.fullname" . }}

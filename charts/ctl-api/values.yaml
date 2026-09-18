@@ -140,6 +140,9 @@ api:
     # -- Slack listener container port
     port: 8089
   mcp:
+    # -- Run the MCP API workload (Deployment + Service + ALB/Ingress). Defaults
+    # to true so existing installs keep the MCP API; set false to omit it.
+    enabled: true
     # -- MCP API domain (e.g. mcp.<root_domain>)
     domain: ""
     # -- MCP API TLS certificate ARN (AWS) or name (GCP)

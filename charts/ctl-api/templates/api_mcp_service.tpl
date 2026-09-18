@@ -1,3 +1,4 @@
+{{- if .Values.api.mcp.enabled }}
 ---
 apiVersion: v1
 kind: Service
@@ -15,3 +16,4 @@ spec:
     - name: http
       port: 80
       targetPort: http-internal
+{{- end }}

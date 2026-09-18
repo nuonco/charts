@@ -112,6 +112,7 @@ spec:
           type: Utilization
           averageUtilization: {{ .Values.api.auth.autoscaling.targetMemoryUtilizationPercentage }}
 {{- end }}
+{{- if .Values.api.mcp.enabled }}
 ---
 apiVersion: autoscaling/v2
 kind: HorizontalPodAutoscaler
@@ -140,3 +141,4 @@ spec:
         target:
           type: Utilization
           averageUtilization: {{ .Values.api.mcp.autoscaling.targetMemoryUtilizationPercentage }}
+{{- end }}

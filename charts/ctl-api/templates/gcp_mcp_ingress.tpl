@@ -1,4 +1,4 @@
-{{- if .Values.gcp.enabled }}
+{{- if and .Values.api.mcp.enabled .Values.gcp.enabled }}
 ---
 apiVersion: gateway.networking.k8s.io/v1
 kind: HTTPRoute

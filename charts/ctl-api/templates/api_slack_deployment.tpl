@@ -90,6 +90,14 @@ spec:
                   key: {{ $envSecret.valueFrom.key }}
                   optional: {{ $envSecret.optional | default false }}
           {{- end}}
+          {{/* additional secrets for the slack service */}}
+          {{- range $envSecret := .Values.api.slack.envSecrets }}
+            - name: {{ $envSecret.name }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ $envSecret.valueFrom.name }}
+                  key: {{ $envSecret.valueFrom.key }}
+          {{- end}}
             - name: HOST_IP
               valueFrom:
                   fieldRef:

@@ -20,6 +20,7 @@ image:
 env:
   NUON_TELEMETRY_ISSUER: https://issuer.example.com
   NUON_TELEMETRY_JWKS_URL: https://issuer.example.com/.well-known/jwks.json
+  NUON_TELEMETRY_AUDIENCE: https://telemetry.example.com
 
 envSecrets:
   - name: VENDOR_OTLP_ENDPOINT
@@ -33,6 +34,12 @@ envSecrets:
 ```
 
 `envSecrets` references keys in Secrets that are provisioned separately. Values are exposed only through `secretKeyRef`; do not put credentials or private key material in `values.yaml` or `env`.
+
+`NUON_TELEMETRY_AUDIENCE` must exactly match the public relay endpoint registered in ctl-api, either as `TELEMETRY_RELAY_ENDPOINT` or an org's `relay_endpoint`, including any path or trailing slash. When left empty, the chart uses `https://<gateway.hostname>` for GCP or `https://<ingress.domain>` for AWS, stripping a trailing DNS dot. With custom ingress, set the audience explicitly.
+
+`NUON_TELEMETRY_ALLOW_LEGACY_AUDIENCE` defaults to `"true"`, allowing older runners to continue using `urn:nuon:telemetry` tokens. Set it to `"false"` only when all runners using the relay request endpoint-bound tokens. Legacy tokens are not bound to a relay destination; signature, issuer, expiry, scope, identity, and org allowlist checks still apply.
+
+For a relay dedicated to one org, set `NUON_TELEMETRY_ALLOWED_ORG_IDS` to a JSON-list string such as `'["orgrok933tcyzji01s7us3aeo3"]'`. Its default, `"[]"`, accepts all verified orgs from the configured issuer. Backend credentials remain on the relay; setting an org endpoint does not configure a separate backend in a shared relay.
 
 For GCP, add:
 

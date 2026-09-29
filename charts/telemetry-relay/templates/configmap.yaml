@@ -5,5 +5,16 @@ metadata:
   labels:
     {{- include "telemetry-relay.labels" . | nindent 4 }}
 data:
-  {{- toYaml (omit .Values.env "NUON_TELEMETRY_ENVIRONMENT_ENDPOINT") | nindent 2 }}
+  {{- range $key, $value := omit .Values.env "NUON_TELEMETRY_ENVIRONMENT_ENDPOINT" "NUON_TELEMETRY_AUDIENCE" }}
+  {{ $key }}: {{ $value | quote }}
+  {{- end }}
+  {{- $audience := .Values.env.NUON_TELEMETRY_AUDIENCE }}
+  {{- if not $audience }}
+    {{- if .Values.gcp.enabled }}
+      {{- $audience = printf "https://%s" (.Values.gateway.hostname | trimSuffix ".") }}
+    {{- else if .Values.aws.enabled }}
+      {{- $audience = printf "https://%s" (.Values.ingress.domain | trimSuffix ".") }}
+    {{- end }}
+  {{- end }}
+  NUON_TELEMETRY_AUDIENCE: {{ $audience | quote }}
   NUON_TELEMETRY_ENVIRONMENT_ENDPOINT: {{ ternary "0.0.0.0:5318" "127.0.0.1:5318" .Values.environmentReceiver.enabled | quote }}

@@ -10,6 +10,10 @@ image:
 env:
   NUON_TELEMETRY_ISSUER: ""
   NUON_TELEMETRY_JWKS_URL: ""
+  # Defaults to the AWS/GCP public ingress URL; set explicitly for custom ingress.
+  NUON_TELEMETRY_AUDIENCE: ""
+  NUON_TELEMETRY_ALLOW_LEGACY_AUDIENCE: "true"
+  NUON_TELEMETRY_ALLOWED_ORG_IDS: "[]"
 
 envSecrets: []
 

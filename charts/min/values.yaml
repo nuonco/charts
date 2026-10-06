@@ -1,0 +1,3 @@
+# Rendered into the ConfigMap data. Override either key at install time.
+message: hello
+owner: nuon

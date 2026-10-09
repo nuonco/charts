@@ -126,9 +126,9 @@ api:
       # -- TLS certificate ARN (AWS) or name (GCP) for the ALB
       domain_certificate: ""
     autoscaling:
-      minReplicas: 2
-      maxReplicas: 4
-      targetCPUUtilizationPercentage: 60
+      minReplicas: 1
+      maxReplicas: 1
+      targetCPUUtilizationPercentage: 75
       targetMemoryUtilizationPercentage: 75
   slack:
     # -- Enable the Slack integration listener (deployment, service, ALB)
@@ -139,6 +139,11 @@ api:
     domain_certificate: ""
     # -- Slack listener container port
     port: 8089
+    autoscaling:
+      minReplicas: 2
+      maxReplicas: 2
+      targetCPUUtilizationPercentage: 75
+      targetMemoryUtilizationPercentage: 75
   mcp:
     # -- Run the MCP API workload (Deployment + Service + ALB/Ingress). Defaults
     # to true so existing installs keep the MCP API; set false to omit it.

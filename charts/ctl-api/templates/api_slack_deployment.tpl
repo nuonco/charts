@@ -118,7 +118,7 @@ metadata:
   name: {{ include "common.fullname" . }}-slack
   namespace: {{ .Release.Namespace }}
 spec:
-  minAvailable: 1
+  maxUnavailable: 1
   selector:
     matchLabels:
       {{- include "common.apiSelectorLabels" . | nindent 6 }}

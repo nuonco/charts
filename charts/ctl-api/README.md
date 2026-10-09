@@ -151,9 +151,9 @@ The `env` map is passed directly into the ConfigMap consumed by all API and work
 | api.dashboard_admin.alb.domain | string | `""` | Public domain for the ALB (external-dns hostname) |
 | api.dashboard_admin.alb.domain_certificate | string | `""` | TLS certificate ARN (AWS) or name (GCP) for the ALB |
 | api.dashboard_admin.alb.enabled | bool | `false` | Whether to create the internet-facing ALB ingress |
-| api.dashboard_admin.autoscaling.maxReplicas | int | `4` |  |
-| api.dashboard_admin.autoscaling.minReplicas | int | `2` |  |
-| api.dashboard_admin.autoscaling.targetCPUUtilizationPercentage | int | `60` |  |
+| api.dashboard_admin.autoscaling.maxReplicas | int | `1` |  |
+| api.dashboard_admin.autoscaling.minReplicas | int | `1` |  |
+| api.dashboard_admin.autoscaling.targetCPUUtilizationPercentage | int | `75` |  |
 | api.dashboard_admin.autoscaling.targetMemoryUtilizationPercentage | int | `75` |  |
 | api.dashboard_admin.enabled | bool | `false` | Run the dashboard-admin workload (Deployment + ClusterIP Service + HPA). The Service is always cluster-internal, so the dashboard-ui chart can proxy to it regardless of whether the ALB below is enabled. |
 | api.dashboard_admin.port | int | `8085` | Dashboard admin container port |
@@ -184,6 +184,10 @@ The `env` map is passed directly into the ConfigMap consumed by all API and work
 | api.runner.domain | string | `""` | Runner API domain |
 | api.runner.domain_certificate | string | `""` | Runner API TLS certificate ARN (AWS) or name (GCP) |
 | api.runner.port | int | `8080` | Runner API container port |
+| api.slack.autoscaling.maxReplicas | int | `2` |  |
+| api.slack.autoscaling.minReplicas | int | `2` |  |
+| api.slack.autoscaling.targetCPUUtilizationPercentage | int | `75` |  |
+| api.slack.autoscaling.targetMemoryUtilizationPercentage | int | `75` |  |
 | api.slack.domain | string | `""` | Slack listener domain (e.g. slack.<root_domain>) |
 | api.slack.domain_certificate | string | `""` | Slack listener TLS certificate ARN (AWS) or name (GCP) |
 | api.slack.enabled | bool | `false` | Enable the Slack integration listener (deployment, service, ALB) |

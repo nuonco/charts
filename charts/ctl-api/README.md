@@ -153,7 +153,7 @@ The `env` map is passed directly into the ConfigMap consumed by all API and work
 | api.dashboard_admin.alb.enabled | bool | `false` | Whether to create the internet-facing ALB ingress |
 | api.dashboard_admin.autoscaling.maxReplicas | int | `1` |  |
 | api.dashboard_admin.autoscaling.minReplicas | int | `1` |  |
-| api.dashboard_admin.autoscaling.targetCPUUtilizationPercentage | int | `60` |  |
+| api.dashboard_admin.autoscaling.targetCPUUtilizationPercentage | int | `75` |  |
 | api.dashboard_admin.autoscaling.targetMemoryUtilizationPercentage | int | `75` |  |
 | api.dashboard_admin.enabled | bool | `false` | Run the dashboard-admin workload (Deployment + ClusterIP Service + HPA). The Service is always cluster-internal, so the dashboard-ui chart can proxy to it regardless of whether the ALB below is enabled. |
 | api.dashboard_admin.port | int | `8085` | Dashboard admin container port |
@@ -186,7 +186,7 @@ The `env` map is passed directly into the ConfigMap consumed by all API and work
 | api.runner.port | int | `8080` | Runner API container port |
 | api.slack.autoscaling.maxReplicas | int | `2` | Maximum replicas for Slack listener |
 | api.slack.autoscaling.minReplicas | int | `2` | Minimum replicas for Slack listener |
-| api.slack.autoscaling.targetCPUUtilizationPercentage | int | `60` | Target CPU utilization for Slack listener autoscaling |
+| api.slack.autoscaling.targetCPUUtilizationPercentage | int | `75` | Target CPU utilization for Slack listener autoscaling |
 | api.slack.autoscaling.targetMemoryUtilizationPercentage | int | `75` | Target memory utilization for Slack listener autoscaling |
 | api.slack.domain | string | `""` | Slack listener domain (e.g. slack.<root_domain>) |
 | api.slack.domain_certificate | string | `""` | Slack listener TLS certificate ARN (AWS) or name (GCP) |

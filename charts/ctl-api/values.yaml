@@ -128,7 +128,7 @@ api:
     autoscaling:
       minReplicas: 1
       maxReplicas: 1
-      targetCPUUtilizationPercentage: 60
+      targetCPUUtilizationPercentage: 75
       targetMemoryUtilizationPercentage: 75
   slack:
     # -- Enable the Slack integration listener (deployment, service, ALB)
@@ -145,7 +145,7 @@ api:
       # -- Maximum replicas for Slack listener
       maxReplicas: 2
       # -- Target CPU utilization for Slack listener autoscaling
-      targetCPUUtilizationPercentage: 60
+      targetCPUUtilizationPercentage: 75
       # -- Target memory utilization for Slack listener autoscaling
       targetMemoryUtilizationPercentage: 75
   mcp:

@@ -184,10 +184,10 @@ The `env` map is passed directly into the ConfigMap consumed by all API and work
 | api.runner.domain | string | `""` | Runner API domain |
 | api.runner.domain_certificate | string | `""` | Runner API TLS certificate ARN (AWS) or name (GCP) |
 | api.runner.port | int | `8080` | Runner API container port |
-| api.slack.autoscaling.maxReplicas | int | `2` | Maximum replicas for Slack listener |
-| api.slack.autoscaling.minReplicas | int | `2` | Minimum replicas for Slack listener |
-| api.slack.autoscaling.targetCPUUtilizationPercentage | int | `75` | Target CPU utilization for Slack listener autoscaling |
-| api.slack.autoscaling.targetMemoryUtilizationPercentage | int | `75` | Target memory utilization for Slack listener autoscaling |
+| api.slack.autoscaling.maxReplicas | int | `2` |  |
+| api.slack.autoscaling.minReplicas | int | `2` |  |
+| api.slack.autoscaling.targetCPUUtilizationPercentage | int | `75` |  |
+| api.slack.autoscaling.targetMemoryUtilizationPercentage | int | `75` |  |
 | api.slack.domain | string | `""` | Slack listener domain (e.g. slack.<root_domain>) |
 | api.slack.domain_certificate | string | `""` | Slack listener TLS certificate ARN (AWS) or name (GCP) |
 | api.slack.enabled | bool | `false` | Enable the Slack integration listener (deployment, service, ALB) |

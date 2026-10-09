@@ -140,13 +140,9 @@ api:
     # -- Slack listener container port
     port: 8089
     autoscaling:
-      # -- Minimum replicas for Slack listener
       minReplicas: 2
-      # -- Maximum replicas for Slack listener
       maxReplicas: 2
-      # -- Target CPU utilization for Slack listener autoscaling
       targetCPUUtilizationPercentage: 75
-      # -- Target memory utilization for Slack listener autoscaling
       targetMemoryUtilizationPercentage: 75
   mcp:
     # -- Run the MCP API workload (Deployment + Service + ALB/Ingress). Defaults

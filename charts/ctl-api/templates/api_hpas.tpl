@@ -142,3 +142,63 @@ spec:
           type: Utilization
           averageUtilization: {{ .Values.api.mcp.autoscaling.targetMemoryUtilizationPercentage }}
 {{- end }}
+{{- if .Values.api.dashboard_admin.enabled }}
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: {{ include "common.fullname" . }}-dashboard-admin
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "common.apiLabels" . | nindent 4 }}
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: {{ include "common.fullname" . }}-dashboard-admin
+  minReplicas: {{ .Values.api.dashboard_admin.autoscaling.minReplicas }}
+  maxReplicas: {{ .Values.api.dashboard_admin.autoscaling.maxReplicas }}
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: {{ .Values.api.dashboard_admin.autoscaling.targetCPUUtilizationPercentage }}
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          type: Utilization
+          averageUtilization: {{ .Values.api.dashboard_admin.autoscaling.targetMemoryUtilizationPercentage }}
+{{- end }}
+{{- if .Values.api.slack.enabled }}
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: {{ include "common.fullname" . }}-slack
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "common.apiLabels" . | nindent 4 }}
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: {{ include "common.fullname" . }}-slack
+  minReplicas: {{ .Values.api.slack.autoscaling.minReplicas }}
+  maxReplicas: {{ .Values.api.slack.autoscaling.maxReplicas }}
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: {{ .Values.api.slack.autoscaling.targetCPUUtilizationPercentage }}
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          type: Utilization
+          averageUtilization: {{ .Values.api.slack.autoscaling.targetMemoryUtilizationPercentage }}
+{{- end }}

@@ -118,7 +118,7 @@ metadata:
   name: {{ include "common.fullname" . }}-dashboard-admin
   namespace: {{ .Release.Namespace }}
 spec:
-  minAvailable: 1
+  maxUnavailable: 1
   selector:
     matchLabels:
       {{- include "common.apiSelectorLabels" . | nindent 6 }}

@@ -4,6 +4,7 @@ on:
   pull_request:
     paths:
       - "charts/**"
+      - ".github/workflows/lint.yaml"
 
 jobs:
   lint:
@@ -15,16 +16,16 @@ jobs:
 
       - uses: azure/setup-helm@v4
 
-      - name: Lint charts
+      - name: Lint and render charts
         run: |
+          set -euo pipefail
           for chart in charts/*/; do
+            set -- "${chart}"
+            if [ -f "${chart}ci/test-values.yaml" ]; then
+              set -- "$@" -f "${chart}ci/test-values.yaml"
+            fi
             echo "==> Linting ${chart}"
-            helm lint "${chart}"
-          done
-
-      - name: Template charts
-        run: |
-          for chart in charts/*/; do
+            helm lint "$@"
             echo "==> Templating ${chart}"
-            helm template test "${chart}"
+            helm template test "$@"
           done

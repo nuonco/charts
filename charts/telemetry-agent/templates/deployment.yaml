@@ -1,0 +1,98 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "telemetry-agent.fullname" . }}
+  labels:
+    {{- include "telemetry-agent.selectorLabels" . | nindent 4 }}
+spec:
+  replicas: 1
+  # Only one process may own the persistent exporter queue.
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      {{- include "telemetry-agent.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "telemetry-agent.selectorLabels" . | nindent 8 }}
+    spec:
+      automountServiceAccountToken: false
+      terminationGracePeriodSeconds: 30
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 10001
+        runAsGroup: 10001
+        fsGroup: 10001
+        seccompProfile:
+          type: RuntimeDefault
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      containers:
+        - name: agent
+          image: {{ printf "%s:%s" (required "image.repository is required" .Values.image.repository) (required "image.tag is required" .Values.image.tag) | quote }}
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          args:
+            - {{ printf "--api-url=%s" (required "apiURL is required" .Values.apiURL) | quote }}
+            - {{ printf "--install-id=%s" (required "installID is required" .Values.installID) | quote }}
+            - --token-file=/var/run/nuon/bootstrap/token
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: [ALL]
+          ports:
+            - name: otlp-grpc
+              containerPort: 4317
+            - name: otlp-http
+              containerPort: 4318
+            - name: health
+              containerPort: 13133
+          livenessProbe:
+            httpGet:
+              path: /livez
+              port: health
+          readinessProbe:
+            httpGet:
+              path: /readyz
+              port: health
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          volumeMounts:
+            - name: bootstrap
+              mountPath: /var/run/nuon/bootstrap
+              readOnly: true
+            - name: state
+              mountPath: /var/lib/nuon/telemetry-agent
+            - name: tmp
+              mountPath: /tmp
+      volumes:
+        - name: bootstrap
+          secret:
+            secretName: {{ required "existingSecret.name is required" .Values.existingSecret.name | quote }}
+            defaultMode: 0440
+            items:
+              - key: {{ required "existingSecret.key is required" .Values.existingSecret.key | quote }}
+                path: token
+        - name: state
+          {{- if .Values.persistence.existingClaim }}
+          persistentVolumeClaim:
+            claimName: {{ .Values.persistence.existingClaim | quote }}
+          {{- else }}
+          emptyDir:
+            sizeLimit: {{ .Values.persistence.sizeLimit }}
+          {{- end }}
+        - name: tmp
+          emptyDir:
+            medium: Memory
+            sizeLimit: 64Mi
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

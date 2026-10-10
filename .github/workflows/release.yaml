@@ -25,6 +25,7 @@ jobs:
           - ctl-api
           - dashboard-ui
           - telemetry-relay
+          - telemetry-agent
     steps:
       - uses: actions/checkout@v4
 

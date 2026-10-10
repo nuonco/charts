@@ -1,0 +1,30 @@
+# Required: runner API base URL, install ID, and an already-created Secret.
+apiURL: ""
+installID: ""
+existingSecret:
+  name: ""
+  key: token
+
+# Supply a published image or one built from Nuon's bins/telemetry-agent/Dockerfile.
+image:
+  repository: ""
+  tag: ""
+  pullPolicy: IfNotPresent
+imagePullSecrets: []
+
+# An existing ReadWriteOnce claim preserves queued data across Pod replacement.
+# Without one, emptyDir survives container restarts but not Pod deletion.
+persistence:
+  existingClaim: ""
+  sizeLimit: 8Gi
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 256Mi
+  limits:
+    cpu: "1"
+    memory: 512Mi
+
+nodeSelector: {}
+tolerations: []

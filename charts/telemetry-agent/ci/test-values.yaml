@@ -1,0 +1,7 @@
+apiURL: https://runner-api.example.com
+installID: inl_example
+existingSecret:
+  name: telemetry-agent-bootstrap
+image:
+  repository: registry.example.com/nuon-telemetry-agent
+  tag: test

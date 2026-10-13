@@ -1,9 +1,8 @@
 # telemetry-agent
 
-Deploys the Nuon edge telemetry agent for one install. The agent supervises an
-OpenTelemetry Collector, polls install telemetry settings, and forwards OTLP
-logs, metrics, and traces to the configured relay using renewable short-lived JWTs.
-It does not scrape Kubernetes, read node logs, or require Kubernetes API access.
+Deploys the Nuon telemetry agent for one install. Existing producers send OTLP
+logs, metrics, and traces to its cluster-local Service for forwarding to the
+install's configured relay. The agent does not scrape Kubernetes or read node logs.
 
 ## Prerequisites
 
@@ -12,13 +11,11 @@ It does not scrape Kubernetes, read node logs, or require Kubernetes API access.
   API token for that install's managed telemetry service account. Do not use an
   org-wide runner or administrator token. See the
   [agent bootstrap instructions](https://github.com/nuonco/nuon/tree/main/bins/telemetry-agent#bootstrap-and-deployment)
-  for account creation and token issuance.
+  for credential requirements.
 - An agent image accessible to the cluster. Supply its repository and tag
   explicitly; the chart does not assume an image has been published.
 
-The chart never creates credentials, Secret objects, service accounts, or RBAC
-grants. Existing/adopted clusters are supported without cloud-specific phone-home
-bootstrap.
+The chart does not create credentials, Secrets, or Kubernetes RBAC grants.
 
 ## Configuration and deployment
 
@@ -55,31 +52,34 @@ helm upgrade --install nuon-telemetry charts/telemetry-agent \
 | `persistence.sizeLimit` | Default `emptyDir` limit, `8Gi`; unused with an existing claim. |
 | `resources`, `nodeSelector`, `tolerations` | Pod resource budget and placement. |
 
-The Secret is mounted as a directory without `subPath`. Each authenticated request
-reopens the credential file, so projected Secret rotations do not require a restart.
-Issue a replacement token, update the Secret, wait for the projected update, and
-then revoke the old token. The pod runs as UID/GID 10001 with a read-only root
-filesystem, dropped capabilities, and no Kubernetes service-account token mount.
-
 Enable forwarding in the install's Nuon telemetry settings. Deploying the agent
 or creating its account does not enable telemetry. An intentionally disabled
-agent keeps polling settings and remains healthy, but stops accepting new OTLP
-input; producers must handle retries.
+agent remains healthy, but does not accept new telemetry; producers must retry.
 
 For release `nuon-telemetry` in namespace `telemetry`, configure existing producers
 to use `nuon-telemetry-agent.telemetry.svc.cluster.local:4317` (gRPC) or
 `http://nuon-telemetry-agent.telemetry.svc.cluster.local:4318` (HTTP). For other
 release names or namespaces, use the Service name rendered by Helm.
 
-**The ClusterIP ingress is unauthenticated OTLP.** Apply network policy allowing
-only trusted producers for this install; do not expose it publicly or aggregate
-unrelated installs. Health port 13133 is private pod health traffic and is not
-exposed by the Service. Outbound relay requests require HTTPS with certificate
-verification. API and relay outages do not cause liveness-triggered restarts.
+## Security and credential rotation
+
+**OTLP ingress is unauthenticated.** Apply network policy allowing only trusted
+producers for this install. Do not expose the Service publicly or use it to
+aggregate unrelated installs. Outbound relay connections require HTTPS with
+certificate verification.
+
+The pod runs as UID/GID 10001 with a read-only root filesystem, dropped
+capabilities, and no Kubernetes service-account token mount. Health checks do
+not require exposing a public health endpoint or restarting during relay outages.
+
+Rotate credentials by issuing a replacement token, updating the existing Secret,
+waiting for the projected update, then revoking the old token. An agent restart
+is not required. Do not replace the directory mount with `subPath`, which prevents
+projected Secret updates from reaching the agent.
 
 ## Queue durability
 
-Fsynced exporter queues are bounded to 1 GiB per signal. Size storage for all
+Disk-backed buffers are bounded to 1 GiB per signal. Size storage for all
 three queues, storage overhead, and compaction; queue limits do not cap disk usage.
 Queue overflow rejects input. Producers must honor OTLP errors and retry;
 permanent relay rejection can discard data, and delivery is not exactly-once.

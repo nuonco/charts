@@ -203,12 +203,14 @@ The `env` map is passed directly into the ConfigMap consumed by all API and work
 | gcp | object | disabled | GCP-specific configuration. When enabled, GCP Gateway/HTTPRoute/HealthCheckPolicy resources are created instead of AWS ALBs. |
 | gcp.certMap | string | `""` | GCP certificate map name for the gateway |
 | gcp.enabled | bool | `false` | Enable GCP ingress resources (Gateway API). Requires the Gateway API and `networking.gke.io` CRDs to be installed on the cluster. |
+| home | string | `"/tmp"` | HOME for every container; the image has no passwd entry for the non-root uid |
 | image.repository | string | `""` | Container image repository |
 | image.tag | string | `""` | Container image tag |
 | nameOverride | string | `""` | Override the chart name |
 | otel.additional_resource_attributes | object | `{}` | Additional OTEL resource attributes, overriding defaults. |
 | otel.enabled | bool | `false` | Enable control-plane OTLP export (currently metrics). |
 | otel.endpoint | string | `""` | HTTP(S) collector base URL, required when enabled. Uses HTTP/protobuf; omit /v1/metrics. |
+| podSecurityContext | object | `{"runAsGroup":65532,"runAsNonRoot":true,"runAsUser":65532}` | Pod-level securityContext applied to every ctl-api deployment |
 | serviceAccount.annotations | object | `{}` | Annotations to add to the service account |
 | serviceAccount.enabled | bool | `true` | Whether to create and use a service account |
 | serviceAccount.name | string | `""` | Service account name |

@@ -12,6 +12,15 @@ image:
   # -- Container image tag
   tag: ""
 
+# -- Pod-level securityContext applied to every ctl-api deployment
+podSecurityContext:
+  runAsNonRoot: true
+  runAsUser: 65532
+  runAsGroup: 65532
+
+# -- HOME for every container; the image has no passwd entry for the non-root uid
+home: /tmp
+
 serviceAccount:
   # -- Whether to create and use a service account
   enabled: true

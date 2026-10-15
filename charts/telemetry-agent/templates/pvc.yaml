@@ -1,0 +1,20 @@
+{{- if and (include "telemetry-agent.stateClaimName" .) .Values.persistence.enabled }}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ include "telemetry-agent.stateClaimName" . }}
+  labels:
+    {{- include "telemetry-agent.selectorLabels" . | nindent 4 }}
+  annotations:
+    # Queued telemetry outlives uninstall; delete the claim explicitly when no longer retained.
+    helm.sh/resource-policy: keep
+spec:
+  accessModes:
+    - ReadWriteOnce
+  {{- with .Values.persistence.storageClass }}
+  storageClassName: {{ . | quote }}
+  {{- end }}
+  resources:
+    requests:
+      storage: {{ required "persistence.size is required when persistence.enabled is true" .Values.persistence.size }}
+{{- end }}

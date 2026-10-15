@@ -1,6 +1,12 @@
-# Required: runner API base URL, install ID, and an already-created Secret.
+# Required: runner API base URL and install ID.
 apiURL: ""
 installID: ""
+
+# Set exactly one bootstrap credential source.
+# bootstrapToken: sensitive; the chart creates <release>-agent-bootstrap with key
+# "token". The token is stored in Helm values and release history.
+bootstrapToken: ""
+# existingSecret: an already-created Secret in the release namespace.
 existingSecret:
   name: ""
   key: token
@@ -12,11 +18,23 @@ image:
   pullPolicy: IfNotPresent
 imagePullSecrets: []
 
-# An existing ReadWriteOnce claim preserves queued data across Pod replacement.
-# Without one, emptyDir survives container restarts but not Pod deletion.
+# A ReadWriteOnce claim preserves queued data across Pod replacement. Set at most
+# one of enabled (chart-created claim, kept on uninstall) or existingClaim.
+# Without either, emptyDir survives container restarts but not Pod deletion.
 persistence:
+  enabled: false
+  size: 8Gi
+  # Empty uses the cluster default StorageClass.
+  storageClass: ""
   existingClaim: ""
+  # emptyDir limit; unused with a claim.
   sizeLimit: 8Gi
+
+# Optional ingress NetworkPolicy for the agent Pod. ingress is a list of
+# networking.k8s.io/v1 NetworkPolicyIngressRule; empty denies all ingress.
+networkPolicy:
+  enabled: false
+  ingress: []
 
 resources:
   requests:

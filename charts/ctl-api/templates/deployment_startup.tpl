@@ -24,6 +24,10 @@ spec:
     spec:
       serviceAccountName: {{ .Values.serviceAccount.name }}
       automountServiceAccountToken: true
+      {{- with $.Values.podSecurityContext }}
+      securityContext:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
 
       # start: NodePool Selection
       {{- with .Values.api.nodeSelector }}
@@ -58,6 +62,7 @@ spec:
                 name: {{ include "common.fullname" . }}
           env:
             {{- include "common.otelEnv" . | nindent 12 }}
+            {{- include "common.homeEnv" . | nindent 12 }}
           {{- range $envSecret := .Values.envSecrets }}
             - name: {{ $envSecret.name }}
               valueFrom:

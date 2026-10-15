@@ -71,15 +71,15 @@ spec:
       volumes:
         - name: bootstrap
           secret:
-            secretName: {{ required "existingSecret.name is required" .Values.existingSecret.name | quote }}
+            secretName: {{ include "telemetry-agent.bootstrapSecretName" . | quote }}
             defaultMode: 0440
             items:
-              - key: {{ required "existingSecret.key is required" .Values.existingSecret.key | quote }}
+              - key: {{ include "telemetry-agent.bootstrapSecretKey" . | quote }}
                 path: token
         - name: state
-          {{- if .Values.persistence.existingClaim }}
+          {{- with include "telemetry-agent.stateClaimName" . }}
           persistentVolumeClaim:
-            claimName: {{ .Values.persistence.existingClaim | quote }}
+            claimName: {{ . | quote }}
           {{- else }}
           emptyDir:
             sizeLimit: {{ .Values.persistence.sizeLimit }}

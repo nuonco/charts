@@ -37,6 +37,19 @@ spec:
   hostnames:
     - {{ .Values.ui.alb.public_domain | trimSuffix "." }}
   rules:
+    # Gateway API has no fixed-response filter. This match is more specific than
+    # the default rule, so the load balancer answers and does not forward.
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /api/ddp
+      filters:
+        - type: RequestRedirect
+          requestRedirect:
+            path:
+              type: ReplaceFullPath
+              replaceFullPath: /
+            statusCode: 302
     - backendRefs:
         - name: {{ include "common.fullname" . }}
           port: 4000

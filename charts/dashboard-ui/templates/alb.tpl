@@ -21,11 +21,20 @@ metadata:
     alb.ingress.kubernetes.io/healthy-threshold-count: '2'
     alb.ingress.kubernetes.io/tags: 'service=dashboard-ui,service_type=ui,env={{ .Values.env.ENV }}'
     external-dns.alpha.kubernetes.io/hostname: {{ .Values.ui.alb.public_domain }}
+    alb.ingress.kubernetes.io/actions.deny-ddp: '{"type":"fixed-response","fixedResponseConfig":{"contentType":"text/plain","statusCode":"403","messageBody":"Forbidden"}}'
 spec:
   ingressClassName: alb
   rules:
     - http:
         paths:
+          # Reject the Datadog browser proxy before it reaches the pod.
+          - path: /api/ddp
+            pathType: Prefix
+            backend:
+              service:
+                name: deny-ddp
+                port:
+                  name: use-annotation
           - path: /
             pathType: Prefix
             backend:

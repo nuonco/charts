@@ -20,12 +20,69 @@ metadata:
     alb.ingress.kubernetes.io/unhealthy-threshold-count: '2'
     alb.ingress.kubernetes.io/healthy-threshold-count: '2'
     alb.ingress.kubernetes.io/tags: 'service=dashboard-ui,service_type=ui,env={{ .Values.env.ENV }}'
+    alb.ingress.kubernetes.io/actions.deny-proxy: '{"type":"fixed-response","fixedResponseConfig":{"contentType":"text/plain","statusCode":"403","messageBody":"Forbidden"}}'
     external-dns.alpha.kubernetes.io/hostname: {{ .Values.ui.alb.public_domain }}
 spec:
   ingressClassName: alb
   rules:
     - http:
         paths:
+          - path: /public/swagger
+            pathType: Prefix
+            backend:
+              service:
+                name: deny-proxy
+                port:
+                  name: use-annotation
+          - path: /admin/temporal-codec
+            pathType: Prefix
+            backend:
+              service:
+                name: deny-proxy
+                port:
+                  name: use-annotation
+          - path: /admin/swagger
+            pathType: Prefix
+            backend:
+              service:
+                name: deny-proxy
+                port:
+                  name: use-annotation
+          - path: /admin/temporal
+            pathType: Prefix
+            backend:
+              service:
+                name: deny-proxy
+                port:
+                  name: use-annotation
+          - path: /admin/kafka
+            pathType: Prefix
+            backend:
+              service:
+                name: deny-proxy
+                port:
+                  name: use-annotation
+          - path: /admin/grafana
+            pathType: Prefix
+            backend:
+              service:
+                name: deny-proxy
+                port:
+                  name: use-annotation
+          - path: /admin/v1
+            pathType: Prefix
+            backend:
+              service:
+                name: deny-proxy
+                port:
+                  name: use-annotation
+          - path: /admin/dashboard
+            pathType: Prefix
+            backend:
+              service:
+                name: deny-proxy
+                port:
+                  name: use-annotation
           - path: /
             pathType: Prefix
             backend:

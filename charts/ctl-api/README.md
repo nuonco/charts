@@ -172,7 +172,10 @@ The `env` map is passed directly into the ConfigMap consumed by all API and work
 | api.public.autoscaling.targetMemoryUtilizationPercentage | int | `80` | Target memory utilization for public API autoscaling |
 | api.public.domain | string | `""` | Public API domain |
 | api.public.domain_certificate | string | `""` | Public API TLS certificate ARN (AWS) or name (GCP) |
+| api.public.exposure | string | `"internet"` | How the public API is exposed. Use `both` while migrating from `internet` to `tailscale`. |
 | api.public.port | int | `8080` | Public API container port |
+| api.public.tailscale.host | string | `"api"` | Tailscale machine name when tailnet exposure is enabled. The hostname is `<host>.<tailnet>.ts.net`. |
+| api.public.tailscale.proxyGroup | string | `""` | Existing Tailscale ingress ProxyGroup. Leave empty for a standalone proxy. |
 | api.readiness_probe | object | `{}` | Readiness probe configuration for API deployments |
 | api.resources | object | `{"requests":{"cpu":"100m","memory":"128Mi"}}` | Default resources for every api deployment. Each api.<service> (public, admin, runner, auth, dashboard_admin, slack, mcp) can override this block — individual fields deep-merge over these defaults. `limits` is optional and can be omitted globally or per service. |
 | api.resources.requests.cpu | string | `"100m"` | CPU request for API containers |

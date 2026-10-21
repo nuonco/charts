@@ -40,3 +40,10 @@ Create the name of the service account to use
 {{- default "default" .Values.serviceAccount.name }}
 {{- end }}
 {{- end }}
+
+{{- define "dashboard-ui.validateExposure" -}}
+{{- $exposure := .Values.ui.exposure | default "internet" -}}
+{{- if not (has $exposure (list "internet" "both" "tailscale")) -}}
+{{- fail "ui.exposure must be internet, both, or tailscale" -}}
+{{- end -}}
+{{- end }}

@@ -1,4 +1,4 @@
-{{- if .Values.gcp }}
+{{- if and .Values.gcp (ne (.Values.ui.exposure | default "internet") "tailscale") }}
 ---
 apiVersion: networking.gke.io/v1
 kind: HealthCheckPolicy

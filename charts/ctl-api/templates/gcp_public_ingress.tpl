@@ -1,4 +1,4 @@
-{{- if .Values.gcp.enabled }}
+{{- if and .Values.gcp.enabled (ne (.Values.api.public.exposure | default "internet") "tailscale") }}
 ---
 apiVersion: gateway.networking.k8s.io/v1
 kind: HTTPRoute

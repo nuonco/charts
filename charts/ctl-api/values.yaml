@@ -164,6 +164,13 @@ api:
       # -- Target memory utilization for MCP API autoscaling
       targetMemoryUtilizationPercentage: 75
   public:
+    # -- How the public API is exposed. Use `both` while migrating from `internet` to `tailscale`.
+    exposure: internet
+    tailscale:
+      # -- Tailscale machine name when tailnet exposure is enabled. The hostname is `<host>.<tailnet>.ts.net`.
+      host: api
+      # -- Existing Tailscale ingress ProxyGroup. Leave empty for a standalone proxy.
+      proxyGroup: ""
     # -- Public API domain
     domain: ""
     # -- Public API TLS certificate ARN (AWS) or name (GCP)

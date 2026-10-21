@@ -1,3 +1,4 @@
+{{- include "ctl-api.validatePublicExposure" . }}
 ---
 apiVersion: v1
 kind: Service

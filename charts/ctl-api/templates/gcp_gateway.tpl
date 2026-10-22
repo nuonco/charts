@@ -84,6 +84,23 @@ spec:
                   {{- range (prepend (.Values.gcp.psc.allowedNamespaces | default list) .Release.Namespace | uniq) }}
                   - {{ . }}
                   {{- end }}
+{{- if .Values.gcp.psc.globalAccess }}
+---
+# Global access can't be added to the forwarding rule once a PSC service attachment
+# references it, so it is on from the start.
+apiVersion: networking.gke.io/v1
+kind: GCPGatewayPolicy
+metadata:
+  name: psc-gateway
+  namespace: {{ .Release.Namespace }}
+spec:
+  default:
+    allowGlobalAccess: true
+  targetRef:
+    group: gateway.networking.k8s.io
+    kind: Gateway
+    name: psc-gateway
+{{- end }}
 {{- end }}
 ---
 apiVersion: gateway.networking.k8s.io/v1

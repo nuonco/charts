@@ -29,3 +29,12 @@ jobs:
             echo "==> Templating ${chart}"
             helm template test "$@"
           done
+
+      - name: Run chart render tests
+        run: |
+          set -euo pipefail
+          for script in charts/*/test/render.sh; do
+            [ -f "${script}" ] || continue
+            echo "==> Running ${script}"
+            bash "${script}"
+          done

@@ -26,6 +26,7 @@ jobs:
           - dashboard-ui
           - telemetry-relay
           - telemetry-agent
+          - runner
     steps:
       - uses: actions/checkout@v4
 

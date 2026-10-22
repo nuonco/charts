@@ -1,4 +1,6 @@
-{{- if and .Values.gcp (ne (.Values.ui.exposure | default "internet") "tailscale") }}
+{{- $internet := ne (.Values.ui.exposure | default "internet") "tailscale" }}
+{{- $private := dig "privateGateway" "enabled" false (.Values.gcp | default dict) }}
+{{- if and .Values.gcp (or $internet $private) }}
 ---
 apiVersion: networking.gke.io/v1
 kind: HealthCheckPolicy
@@ -30,10 +32,18 @@ metadata:
     {{- include "common.labels" . | nindent 4 }}
 spec:
   parentRefs:
+    {{- if $internet }}
     - kind: Gateway
       name: external-gateway
       namespace: ctl-api
       sectionName: https
+    {{- end }}
+    {{- if $private }}
+    - kind: Gateway
+      name: private-gateway
+      namespace: ctl-api
+      sectionName: https
+    {{- end }}
   hostnames:
     - {{ .Values.ui.alb.public_domain | trimSuffix "." }}
   rules:

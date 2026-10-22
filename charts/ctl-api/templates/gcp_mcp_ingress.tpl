@@ -13,6 +13,11 @@ spec:
     - kind: Gateway
       name: external-gateway
       sectionName: https
+    {{- if .Values.gcp.privateGateway.enabled }}
+    - kind: Gateway
+      name: private-gateway
+      sectionName: https
+    {{- end }}
   hostnames:
     - {{ .Values.api.mcp.domain | trimSuffix "." }}
   rules:

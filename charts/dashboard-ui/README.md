@@ -77,6 +77,7 @@ The `env` map is passed directly into the ConfigMap consumed by all dashboard-ui
 | environment                                      | string | `""`        | Deployment environment name (e.g. `production`, `staging`)                                   |
 | fullnameOverride                                 | string | `""`        | Override the full release name                                                               |
 | gcp                                              | object | disabled    | GCP-specific configuration. When set, GCP ingress resources are created instead of AWS ALBs. |
+| gcp.privateGateway.enabled                       | bool   | `false`     | Also attach the UI route to the ctl-api `private-gateway`.                                   |
 | image.repository                                 | string | `""`        | Container image repository                                                                   |
 | image.tag                                        | string | `""`        | Container image tag                                                                          |
 | nameOverride                                     | string | `""`        | Override the chart name                                                                      |

@@ -209,6 +209,10 @@ The `env` map is passed directly into the ConfigMap consumed by all API and work
 | gcp.privateGateway.address | string | `""` | Reserved regional internal address name for the private gateway, so the forwarding rule IP is stable. Leave empty for an ephemeral address. |
 | gcp.privateGateway.certificate | string | `""` | Regional Certificate Manager certificate name for the private gateway listener. Global certificate maps do not work on regional gateways. |
 | gcp.privateGateway.enabled | bool | `false` | Create a regional internal HTTPS gateway (`gke-l7-rilb`) and attach the public, auth, and MCP routes to it. Publish it to consumers with a Private Service Connect service attachment. |
+| gcp.privateGateway.subnetRouter.enabled | bool | `false` | Advertise the private gateway address into the tailnet. Requires the Tailscale operator and its Connector CRD. |
+| gcp.privateGateway.subnetRouter.hostnamePrefix | string | `private-gateway` | Hostname prefix for the router device on the tailnet. |
+| gcp.privateGateway.subnetRouter.replicas | int | `1` | Router replicas. |
+| gcp.privateGateway.subnetRouter.route | string | `""` | CIDR the router advertises. Set this to the private gateway IP with a /32 prefix. |
 | image.repository | string | `""` | Container image repository |
 | image.tag | string | `""` | Container image tag |
 | nameOverride | string | `""` | Override the chart name |

@@ -57,6 +57,15 @@ gcp:
     certificate: ""
     # -- Reserved regional internal address name for the private gateway, so the forwarding rule IP is stable. Leave empty for an ephemeral address.
     address: ""
+    # -- Advertise the private gateway address into the tailnet. Requires the Tailscale operator and its Connector CRD.
+    subnetRouter:
+      enabled: false
+      # -- CIDR the router advertises. Set this to the private gateway IP with a /32 prefix.
+      route: ""
+      # -- Hostname prefix for the router device on the tailnet.
+      hostnamePrefix: private-gateway
+      # -- Router replicas.
+      replicas: 1
 
 auth:
   # -- Enable the auth API endpoint

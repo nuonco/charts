@@ -57,6 +57,8 @@ gcp:
     certificate: ""
     # -- Reserved regional internal address name for the private gateway, so the forwarding rule IP is stable. Leave empty for an ephemeral address.
     address: ""
+    # -- Keep the public, auth, and MCP routes on the external gateway as well. Set to false to serve them only through the private gateway. The runner and Slack routes always stay on the external gateway.
+    internet: true
     # -- Advertise the private gateway address into the tailnet. Requires the Tailscale operator and its Connector CRD.
     subnetRouter:
       enabled: false
@@ -180,13 +182,6 @@ api:
       # -- Target memory utilization for MCP API autoscaling
       targetMemoryUtilizationPercentage: 75
   public:
-    # -- How the public API is exposed. Use `both` while migrating from `internet` to `tailscale`.
-    exposure: internet
-    tailscale:
-      # -- Tailscale machine name when tailnet exposure is enabled. The hostname is `<host>.<tailnet>.ts.net`.
-      host: api
-      # -- Existing Tailscale ingress ProxyGroup. Leave empty for a standalone proxy.
-      proxyGroup: ""
     # -- Public API domain
     domain: ""
     # -- Public API TLS certificate ARN (AWS) or name (GCP)

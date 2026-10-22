@@ -41,9 +41,7 @@ Create the name of the service account to use
 {{- end }}
 {{- end }}
 
-{{- define "dashboard-ui.validateExposure" -}}
-{{- $exposure := .Values.ui.exposure | default "internet" -}}
-{{- if not (has $exposure (list "internet" "both" "tailscale")) -}}
-{{- fail "ui.exposure must be internet, both, or tailscale" -}}
-{{- end -}}
+{{- define "dashboard-ui.internet" -}}
+{{- $private := dig "privateGateway" dict (.Values.gcp | default dict) -}}
+{{- if or (not $private.enabled) (ne (toString $private.internet) "false") -}}true{{- end -}}
 {{- end }}

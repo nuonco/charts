@@ -1,5 +1,4 @@
-{{- include "dashboard-ui.validateExposure" . }}
-{{- if and (not .Values.gcp) (ne (.Values.ui.exposure | default "internet") "tailscale") }}
+{{- if not .Values.gcp }}
 ---
 apiVersion: networking.k8s.io/v1
 kind: Ingress

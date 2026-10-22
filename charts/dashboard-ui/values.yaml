@@ -32,13 +32,6 @@ envSecrets: []
 gcp: {}
 
 ui:
-  # -- How the UI is exposed. Use `both` while migrating from `internet` to `tailscale`.
-  exposure: internet
-  tailscale:
-    # -- Tailscale machine name when tailnet exposure is enabled. The hostname is `<host>.<tailnet>.ts.net`.
-    host: dashboard
-    # -- Existing Tailscale ingress ProxyGroup. Leave empty for a standalone proxy.
-    proxyGroup: ""
   # -- UI container port
   port: 4000
   # -- Liveness probe path

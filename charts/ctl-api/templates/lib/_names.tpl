@@ -41,9 +41,7 @@ Create the name of the service account to use
 {{- end }}
 {{- end }}
 
-{{- define "ctl-api.validatePublicExposure" -}}
-{{- $exposure := .Values.api.public.exposure | default "internet" -}}
-{{- if not (has $exposure (list "internet" "both" "tailscale")) -}}
-{{- fail "api.public.exposure must be internet, both, or tailscale" -}}
-{{- end -}}
+{{- define "ctl-api.internet" -}}
+{{- $private := .Values.gcp.privateGateway | default dict -}}
+{{- if or (not $private.enabled) (ne (toString $private.internet) "false") -}}true{{- end -}}
 {{- end }}

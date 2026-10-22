@@ -78,6 +78,7 @@ The `env` map is passed directly into the ConfigMap consumed by all dashboard-ui
 | fullnameOverride                                 | string | `""`        | Override the full release name                                                               |
 | gcp                                              | object | disabled    | GCP-specific configuration. When set, GCP ingress resources are created instead of AWS ALBs. |
 | gcp.privateGateway.enabled                       | bool   | `false`     | Also attach the UI route to the ctl-api `private-gateway`.                                   |
+| gcp.privateGateway.internet                      | bool   | `true`      | Keep the UI route on the external gateway as well. Set to false to serve it only through the private gateway. |
 | image.repository                                 | string | `""`        | Container image repository                                                                   |
 | image.tag                                        | string | `""`        | Container image tag                                                                          |
 | nameOverride                                     | string | `""`        | Override the chart name                                                                      |
@@ -90,7 +91,6 @@ The `env` map is passed directly into the ConfigMap consumed by all dashboard-ui
 | ui.autoscaling.minReplicas                       | int    | `2`         | Minimum replicas                                                                             |
 | ui.autoscaling.targetCPUUtilizationPercentage    | int    | `50`        | Target CPU utilization for autoscaling                                                       |
 | ui.autoscaling.targetMemoryUtilizationPercentage | int    | `50`        | Target memory utilization for autoscaling                                                    |
-| ui.exposure                                      | string | `"internet"` | How the UI is exposed. Use `both` while migrating from `internet` to `tailscale`.             |
 | ui.liveness_probe                                | string | `"/livez"`  | Liveness probe path                                                                          |
 | ui.nodeSelector                                  | object | `{}`        | Node selector for UI pods                                                                    |
 | ui.port                                          | int    | `4000`      | UI container port                                                                            |
@@ -99,8 +99,6 @@ The `env` map is passed directly into the ConfigMap consumed by all dashboard-ui
 | ui.resources.limits.memory                       | string | `"1024Mi"`  | Memory limit for UI containers                                                               |
 | ui.resources.requests.cpu                        | string | `"500m"`    | CPU request for UI containers                                                                |
 | ui.resources.requests.memory                     | string | `"512Mi"`   | Memory request for UI containers                                                             |
-| ui.tailscale.host                                | string | `"dashboard"` | Tailscale machine name when tailnet exposure is enabled.                                      |
-| ui.tailscale.proxyGroup                          | string | `""`        | Existing Tailscale ingress ProxyGroup. Leave empty for a standalone proxy.                    |
 | ui.tolerations                                   | list   | `[]`        | Tolerations for UI pods                                                                      |
 
 ---

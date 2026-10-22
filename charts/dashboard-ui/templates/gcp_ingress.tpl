@@ -1,6 +1,6 @@
-{{- $internet := ne (.Values.ui.exposure | default "internet") "tailscale" }}
+{{- $internet := include "dashboard-ui.internet" . }}
 {{- $private := dig "privateGateway" "enabled" false (.Values.gcp | default dict) }}
-{{- if and .Values.gcp (or $internet $private) }}
+{{- if .Values.gcp }}
 ---
 apiVersion: networking.gke.io/v1
 kind: HealthCheckPolicy

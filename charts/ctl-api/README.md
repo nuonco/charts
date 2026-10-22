@@ -172,10 +172,7 @@ The `env` map is passed directly into the ConfigMap consumed by all API and work
 | api.public.autoscaling.targetMemoryUtilizationPercentage | int | `80` | Target memory utilization for public API autoscaling |
 | api.public.domain | string | `""` | Public API domain |
 | api.public.domain_certificate | string | `""` | Public API TLS certificate ARN (AWS) or name (GCP) |
-| api.public.exposure | string | `"internet"` | How the public API is exposed. Use `both` while migrating from `internet` to `tailscale`. |
 | api.public.port | int | `8080` | Public API container port |
-| api.public.tailscale.host | string | `"api"` | Tailscale machine name when tailnet exposure is enabled. The hostname is `<host>.<tailnet>.ts.net`. |
-| api.public.tailscale.proxyGroup | string | `""` | Existing Tailscale ingress ProxyGroup. Leave empty for a standalone proxy. |
 | api.readiness_probe | object | `{}` | Readiness probe configuration for API deployments |
 | api.resources | object | `{"requests":{"cpu":"100m","memory":"128Mi"}}` | Default resources for every api deployment. Each api.<service> (public, admin, runner, auth, dashboard_admin, slack, mcp) can override this block — individual fields deep-merge over these defaults. `limits` is optional and can be omitted globally or per service. |
 | api.resources.requests.cpu | string | `"100m"` | CPU request for API containers |
@@ -209,6 +206,7 @@ The `env` map is passed directly into the ConfigMap consumed by all API and work
 | gcp.privateGateway.address | string | `""` | Reserved regional internal address name for the private gateway, so the forwarding rule IP is stable. Leave empty for an ephemeral address. |
 | gcp.privateGateway.certificate | string | `""` | Regional Certificate Manager certificate name for the private gateway listener. Global certificate maps do not work on regional gateways. |
 | gcp.privateGateway.enabled | bool | `false` | Create a regional internal HTTPS gateway (`gke-l7-rilb`) and attach the public, auth, and MCP routes to it. Publish it to consumers with a Private Service Connect service attachment. |
+| gcp.privateGateway.internet | bool | `true` | Keep the public, auth, and MCP routes on the external gateway as well. Set to false to serve them only through the private gateway. The runner and Slack routes always stay on the external gateway. |
 | gcp.privateGateway.subnetRouter.enabled | bool | `false` | Advertise the private gateway address into the tailnet. Requires the Tailscale operator and its Connector CRD. |
 | gcp.privateGateway.subnetRouter.hostnamePrefix | string | `private-gateway` | Hostname prefix for the router device on the tailnet. |
 | gcp.privateGateway.subnetRouter.replicas | int | `1` | Router replicas. |

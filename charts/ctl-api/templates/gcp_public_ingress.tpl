@@ -1,5 +1,5 @@
-{{- $internet := ne (.Values.api.public.exposure | default "internet") "tailscale" }}
-{{- if and .Values.gcp.enabled (or $internet .Values.gcp.privateGateway.enabled) }}
+{{- $internet := include "ctl-api.internet" . }}
+{{- if .Values.gcp.enabled }}
 ---
 apiVersion: gateway.networking.k8s.io/v1
 kind: HTTPRoute

@@ -1,4 +1,4 @@
-{{- if and (not .Values.gcp.enabled) (ne (.Values.api.public.exposure | default "internet") "tailscale") }}
+{{- if not .Values.gcp.enabled }}
 ---
 apiVersion: networking.k8s.io/v1
 kind: Ingress

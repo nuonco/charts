@@ -1,4 +1,8 @@
 {{- if .Values.gcp }}
+{{- $gateways := list (dict "name" "external-gateway" "namespace" "ctl-api" "sectionName" "https") }}
+{{- if hasKey .Values.gcp "gateways" }}
+{{- $gateways = .Values.gcp.gateways | default list }}
+{{- end }}
 ---
 apiVersion: networking.gke.io/v1
 kind: HealthCheckPolicy
@@ -20,6 +24,7 @@ spec:
     group: ""
     kind: Service
     name: {{ include "common.fullname" . }}
+{{- if $gateways }}
 ---
 apiVersion: gateway.networking.k8s.io/v1
 kind: HTTPRoute
@@ -30,14 +35,17 @@ metadata:
     {{- include "common.labels" . | nindent 4 }}
 spec:
   parentRefs:
+    {{- range $gateways }}
     - kind: Gateway
-      name: external-gateway
-      namespace: ctl-api
-      sectionName: https
+      name: {{ .name }}
+      namespace: {{ .namespace | default "ctl-api" }}
+      sectionName: {{ .sectionName | default "https" }}
+    {{- end }}
   hostnames:
     - {{ .Values.ui.alb.public_domain | trimSuffix "." }}
   rules:
     - backendRefs:
         - name: {{ include "common.fullname" . }}
           port: 4000
+{{- end }}
 {{- end }}

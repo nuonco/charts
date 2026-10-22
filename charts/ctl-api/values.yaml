@@ -56,6 +56,20 @@ gcp:
   securityPolicy: ""
   # -- Regional Certificate Manager certificate names (must be in the cluster's region). Required when `scope: regional`.
   certificates: []
+  # -- Routes attached to `external-gateway`. Valid keys: `public`, `runner`, `auth`, `mcp`, `slack`, `dashboard_admin`. A route listed here and in `psc.routes` attaches to both gateways; a route in neither gets no HTTPRoute. The admin route always stays on `internal-gateway`.
+  externalRoutes: [public, runner, auth, mcp, slack, dashboard_admin]
+  # -- Internal `gke-l7-rilb` gateway (`psc-gateway`) meant to be published as a Private Service Connect service attachment. The service attachment and PSC NAT subnet are created outside the chart. Requires the proxy-only subnet.
+  psc:
+    # -- Create `psc-gateway`
+    enabled: false
+    # -- Name of a pre-created regional static internal IP for the gateway, so its forwarding rule has a known address
+    addressName: ""
+    # -- Regional Certificate Manager certificate names attached to the HTTPS listener (must be in the cluster's region)
+    certificates: []
+    # -- Routes attached to `psc-gateway`. Same keys as `externalRoutes`.
+    routes: [public, auth, mcp]
+    # -- Namespaces (besides the release namespace) whose HTTPRoutes may attach to `psc-gateway`
+    allowedNamespaces: [dashboard-ui, grafana-lgtm]
 
 auth:
   # -- Enable the auth API endpoint

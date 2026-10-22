@@ -9,6 +9,10 @@ kind: Gateway
 metadata:
   name: external-gateway
   namespace: {{ .Release.Namespace }}
+  labels:
+    # The public external-dns instance filters on this label so it never publishes
+    # the internal IPs of other gateways (e.g. psc-gateway) into the public zone.
+    nuon.co/external-dns: public
   {{- if eq $scope "global" }}
   annotations:
     networking.gke.io/certmap: {{ .Values.gcp.certMap }}
@@ -41,6 +45,46 @@ spec:
       allowedRoutes:
         namespaces:
           from: All
+{{- if .Values.gcp.psc.enabled }}
+---
+# Internal gateway published to consumers over Private Service Connect. The service
+# attachment is created outside the chart, against the forwarding rule for this
+# gateway's static address. Kept separate from internal-gateway, which serves the
+# unauthenticated admin API: a PSC consumer can send any Host header, so only routes
+# listed in gcp.psc.routes attach here and unmatched hosts get a 404.
+apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+  name: psc-gateway
+  namespace: {{ .Release.Namespace }}
+spec:
+  gatewayClassName: gke-l7-rilb
+  addresses:
+    - type: NamedAddress
+      value: {{ required "gcp.psc.addressName is required when gcp.psc.enabled" .Values.gcp.psc.addressName }}
+  listeners:
+    - name: https
+      protocol: HTTPS
+      port: 443
+      {{- if not .Values.gcp.psc.certificates }}
+      {{- fail "gcp.psc.certificates is required when gcp.psc.enabled" }}
+      {{- end }}
+      tls:
+        mode: Terminate
+        options:
+          networking.gke.io/cert-manager-certs: {{ join "," .Values.gcp.psc.certificates | quote }}
+      allowedRoutes:
+        namespaces:
+          from: Selector
+          selector:
+            matchExpressions:
+              - key: kubernetes.io/metadata.name
+                operator: In
+                values:
+                  {{- range (prepend (.Values.gcp.psc.allowedNamespaces | default list) .Release.Namespace | uniq) }}
+                  - {{ . }}
+                  {{- end }}
+{{- end }}
 ---
 apiVersion: gateway.networking.k8s.io/v1
 kind: HTTPRoute

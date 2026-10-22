@@ -66,8 +66,8 @@ gcp:
     certificates: []
     # -- Routes attached to `psc-gateway`. Same keys as `externalRoutes`.
     routes: [public, auth, mcp]
-    # -- Namespaces (besides the release namespace) whose HTTPRoutes may attach to `psc-gateway`
-    allowedNamespaces: [dashboard-ui, grafana-lgtm]
+    # -- Namespaces (besides the release namespace) whose HTTPRoutes may attach to `psc-gateway`. Add `grafana-lgtm` if it is deployed and its route should be reachable over PSC.
+    allowedNamespaces: [dashboard-ui]
 
 auth:
   # -- Enable the auth API endpoint

@@ -1,6 +1,6 @@
 # ctl-api
 
-![Version: 0.7.0](https://img.shields.io/badge/Version-0.7.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 0.0.1](https://img.shields.io/badge/AppVersion-0.0.1-informational?style=flat-square)
+![Version: 0.8.0](https://img.shields.io/badge/Version-0.8.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 0.0.1](https://img.shields.io/badge/AppVersion-0.0.1-informational?style=flat-square)
 
 A helm chart for deploying the ctl-api (api and workers).
 
@@ -164,6 +164,7 @@ The `env` map is passed directly into the ConfigMap consumed by all API and work
 | api.mcp.autoscaling.targetMemoryUtilizationPercentage | int | `75` | Target memory utilization for MCP API autoscaling |
 | api.mcp.domain | string | `""` | MCP API domain (e.g. mcp.<root_domain>) |
 | api.mcp.domain_certificate | string | `""` | MCP API TLS certificate ARN (AWS) or name (GCP) |
+| api.mcp.enabled | bool | `true` | Run the MCP API workload (Deployment + Service + ALB/Ingress). Defaults to true so existing installs keep the MCP API; set false to omit it. |
 | api.mcp.port | int | `8088` | MCP API container port |
 | api.nodeSelector | object | `{}` | Node selector for API pods |
 | api.public.autoscaling.maxReplicas | int | `3` | Maximum replicas for public API |
@@ -201,8 +202,10 @@ The `env` map is passed directly into the ConfigMap consumed by all API and work
 | environment | string | `""` | Deployment environment name (e.g. `production`, `staging`) |
 | fullnameOverride | string | `""` | Override the full release name |
 | gcp | object | disabled | GCP-specific configuration. When enabled, GCP Gateway/HTTPRoute/HealthCheckPolicy resources are created instead of AWS ALBs. |
-| gcp.certMap | string | `""` | GCP certificate map name for the gateway |
+| gcp.certMap | string | `""` | Certificate Manager certificate map name. Required when `scope: global`. |
+| gcp.certificates | list | `[]` | Regional Certificate Manager certificate names (must be in the cluster's region). Required when `scope: regional`. |
 | gcp.enabled | bool | `false` | Enable GCP ingress resources (Gateway API). Requires the Gateway API and `networking.gke.io` CRDs to be installed on the cluster. |
+| gcp.scope | string | `"global"` | Scope of the external gateway and its certificate: `global` (global external Application LB, certificate attached via a Certificate Manager certificate map) or `regional` (regional external Application LB, regional Certificate Manager certificates attached to the HTTPS listener). Regional requires a proxy-only subnet in the cluster's region. |
 | image.repository | string | `""` | Container image repository |
 | image.tag | string | `""` | Container image tag |
 | nameOverride | string | `""` | Override the chart name |

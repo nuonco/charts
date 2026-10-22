@@ -48,8 +48,12 @@ envSecrets: []
 gcp:
   # -- Enable GCP ingress resources (Gateway API). Requires the Gateway API and `networking.gke.io` CRDs to be installed on the cluster.
   enabled: false
-  # -- GCP certificate map name for the gateway
+  # -- Scope of the external gateway and its certificate: `global` (global external Application LB, certificate attached via a Certificate Manager certificate map) or `regional` (regional external Application LB, regional Certificate Manager certificates attached to the HTTPS listener). Regional requires a proxy-only subnet in the cluster's region.
+  scope: global
+  # -- Certificate Manager certificate map name. Required when `scope: global`.
   certMap: ""
+  # -- Regional Certificate Manager certificate names (must be in the cluster's region). Required when `scope: regional`.
+  certificates: []
 
 auth:
   # -- Enable the auth API endpoint

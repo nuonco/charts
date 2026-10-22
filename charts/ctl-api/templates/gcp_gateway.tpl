@@ -1,18 +1,37 @@
 {{- if .Values.gcp.enabled }}
+{{- $scope := .Values.gcp.scope | default "global" }}
+{{- if not (has $scope (list "global" "regional")) }}
+{{- fail (printf "gcp.scope must be one of: global, regional (got %q)" $scope) }}
+{{- end }}
 ---
 apiVersion: gateway.networking.k8s.io/v1
 kind: Gateway
 metadata:
   name: external-gateway
   namespace: {{ .Release.Namespace }}
+  {{- if eq $scope "global" }}
   annotations:
     networking.gke.io/certmap: {{ .Values.gcp.certMap }}
+  {{- end }}
 spec:
+  {{- if eq $scope "global" }}
   gatewayClassName: gke-l7-global-external-managed
+  {{- else }}
+  gatewayClassName: gke-l7-regional-external-managed
+  {{- end }}
   listeners:
     - name: https
       protocol: HTTPS
       port: 443
+      {{- if eq $scope "regional" }}
+      {{- if not .Values.gcp.certificates }}
+      {{- fail "gcp.certificates is required when gcp.scope is regional" }}
+      {{- end }}
+      tls:
+        mode: Terminate
+        options:
+          networking.gke.io/cert-manager-certs: {{ join "," .Values.gcp.certificates | quote }}
+      {{- end }}
       allowedRoutes:
         namespaces:
           from: All

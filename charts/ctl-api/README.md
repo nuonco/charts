@@ -203,8 +203,10 @@ The `env` map is passed directly into the ConfigMap consumed by all API and work
 | environment | string | `""` | Deployment environment name (e.g. `production`, `staging`) |
 | fullnameOverride | string | `""` | Override the full release name |
 | gcp | object | disabled | GCP-specific configuration. When enabled, GCP Gateway/HTTPRoute/HealthCheckPolicy resources are created instead of AWS ALBs. |
-| gcp.certMap | string | `""` | GCP certificate map name for the gateway |
+| gcp.certMap | string | `""` | Certificate Manager certificate map name. Required when `scope: global`. |
+| gcp.certificates | list | `[]` | Regional Certificate Manager certificate names (must be in the cluster's region). Required when `scope: regional`. |
 | gcp.enabled | bool | `false` | Enable GCP ingress resources (Gateway API). Requires the Gateway API and `networking.gke.io` CRDs to be installed on the cluster. |
+| gcp.scope | string | `"global"` | Scope of the external gateway and its certificate: `global` (global external Application LB, certificate attached via a Certificate Manager certificate map) or `regional` (regional external Application LB, regional Certificate Manager certificates attached to the HTTPS listener). Regional requires a proxy-only subnet in the cluster's region. |
 | image.repository | string | `""` | Container image repository |
 | image.tag | string | `""` | Container image tag |
 | nameOverride | string | `""` | Override the chart name |

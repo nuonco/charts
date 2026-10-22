@@ -1,6 +1,6 @@
 # dashboard-ui
 
-![Version: 0.1.0](https://img.shields.io/badge/Version-0.1.0-informational?style=flat-square)
+![Version: 0.1.6](https://img.shields.io/badge/Version-0.1.6-informational?style=flat-square)
 ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square)
 ![AppVersion: 0.0.1](https://img.shields.io/badge/AppVersion-0.0.1-informational?style=flat-square)
 
@@ -70,34 +70,35 @@ The `env` map is passed directly into the ConfigMap consumed by all dashboard-ui
 
 ## Values
 
-| Key                                              | Type   | Default     | Description                                                                                  |
-| ------------------------------------------------ | ------ | ----------- | -------------------------------------------------------------------------------------------- |
-| env                                              | object | `{}`        | Environment variables set via the ConfigMap (key/value pairs)                                |
-| envSecrets                                       | list   | `[]`        | Secrets to inject as environment variables                                                   |
-| environment                                      | string | `""`        | Deployment environment name (e.g. `production`, `staging`)                                   |
-| fullnameOverride                                 | string | `""`        | Override the full release name                                                               |
-| gcp                                              | object | disabled    | GCP-specific configuration. When set, GCP ingress resources are created instead of AWS ALBs. |
-| image.repository                                 | string | `""`        | Container image repository                                                                   |
-| image.tag                                        | string | `""`        | Container image tag                                                                          |
-| nameOverride                                     | string | `""`        | Override the chart name                                                                      |
-| serviceAccount.annotations                       | object | `{}`        | Annotations to add to the service account                                                    |
-| serviceAccount.enabled                           | bool   | `true`      | Whether to create and use a service account                                                  |
-| serviceAccount.name                              | string | `""`        | Service account name                                                                         |
-| ui.alb.public_domain                             | string | `""`        | Public domain for the ALB                                                                    |
-| ui.alb.public_domain_certificate                 | string | `""`        | TLS certificate ARN (AWS) for the ALB                                                        |
-| ui.autoscaling.maxReplicas                       | int    | `5`         | Maximum replicas                                                                             |
-| ui.autoscaling.minReplicas                       | int    | `2`         | Minimum replicas                                                                             |
-| ui.autoscaling.targetCPUUtilizationPercentage    | int    | `50`        | Target CPU utilization for autoscaling                                                       |
-| ui.autoscaling.targetMemoryUtilizationPercentage | int    | `50`        | Target memory utilization for autoscaling                                                    |
-| ui.liveness_probe                                | string | `"/livez"`  | Liveness probe path                                                                          |
-| ui.nodeSelector                                  | object | `{}`        | Node selector for UI pods                                                                    |
-| ui.port                                          | int    | `4000`      | UI container port                                                                            |
-| ui.readiness_probe                               | string | `"/readyz"` | Readiness probe path                                                                         |
-| ui.resources.limits.cpu                          | string | `"1000m"`   | CPU limit for UI containers                                                                  |
-| ui.resources.limits.memory                       | string | `"1024Mi"`  | Memory limit for UI containers                                                               |
-| ui.resources.requests.cpu                        | string | `"500m"`    | CPU request for UI containers                                                                |
-| ui.resources.requests.memory                     | string | `"512Mi"`   | Memory request for UI containers                                                             |
-| ui.tolerations                                   | list   | `[]`        | Tolerations for UI pods                                                                      |
+| Key                                              | Type   | Default     | Description                                                                                                            |
+| ------------------------------------------------ | ------ | ----------- | ---------------------------------------------------------------------------------------------------------------------- |
+| env                                              | object | `{}`        | Environment variables set via the ConfigMap (key/value pairs)                                                          |
+| envSecrets                                       | list   | `[]`        | Secrets to inject as environment variables                                                                             |
+| environment                                      | string | `""`        | Deployment environment name (e.g. `production`, `staging`)                                                             |
+| fullnameOverride                                 | string | `""`        | Override the full release name                                                                                         |
+| gcp                                              | object | disabled    | GCP-specific configuration. When set, GCP ingress resources are created instead of AWS ALBs. See `gcp.gateways` above. |
+| image.repository                                 | string | `""`        | Container image repository                                                                                             |
+| image.tag                                        | string | `""`        | Container image tag                                                                                                    |
+| nameOverride                                     | string | `""`        | Override the chart name                                                                                                |
+| serviceAccount.annotations                       | object | `{}`        | Annotations to add to the service account                                                                              |
+| serviceAccount.enabled                           | bool   | `true`      | Whether to create and use a service account                                                                            |
+| serviceAccount.name                              | string | `""`        | Service account name                                                                                                   |
+| ui.alb.public_domain                             | string | `""`        | Public domain for the ALB                                                                                              |
+| ui.alb.public_domain_certificate                 | string | `""`        | TLS certificate ARN (AWS) for the ALB                                                                                  |
+| ui.autoscaling.maxReplicas                       | int    | `5`         | Maximum replicas                                                                                                       |
+| ui.autoscaling.minReplicas                       | int    | `2`         | Minimum replicas                                                                                                       |
+| ui.autoscaling.targetCPUUtilizationPercentage    | int    | `50`        | Target CPU utilization for autoscaling                                                                                 |
+| ui.autoscaling.targetMemoryUtilizationPercentage | int    | `50`        | Target memory utilization for autoscaling                                                                              |
+| ui.liveness_probe                                | string | `"/livez"`  | Liveness probe path                                                                                                    |
+| ui.nodeSelector                                  | object | `{}`        | Node selector for UI pods                                                                                              |
+| ui.port                                          | int    | `4000`      | UI container port                                                                                                      |
+| ui.readiness_probe                               | string | `"/readyz"` | Readiness probe path                                                                                                   |
+| ui.resources.limits.cpu                          | string | `"1000m"`   | CPU limit for UI containers                                                                                            |
+| ui.resources.limits.memory                       | string | `"1024Mi"`  | Memory limit for UI containers                                                                                         |
+| ui.resources.requests.cpu                        | string | `"500m"`    | CPU request for UI containers                                                                                          |
+| ui.resources.requests.memory                     | string | `"512Mi"`   | Memory request for UI containers                                                                                       |
+| ui.securityContext                               | object | `{}`        | Container security context for the UI container                                                                        |
+| ui.tolerations                                   | list   | `[]`        | Tolerations for UI pods                                                                                                |
 
 ---
 

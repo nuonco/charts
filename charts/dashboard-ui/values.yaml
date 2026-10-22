@@ -27,7 +27,16 @@ env: {}
 # @default -- `[]`
 envSecrets: []
 
-# -- GCP-specific configuration. When set, GCP ingress resources are created instead of AWS ALBs.
+# `gcp.gateways` lists the Gateways the HTTPRoute attaches to. Each entry takes `name`, `namespace`
+# (default `ctl-api`) and `sectionName` (default `https`). If unset it defaults to
+# `[{name: external-gateway, namespace: ctl-api, sectionName: https}]`. An empty list renders no HTTPRoute.
+#
+# gcp:
+#   gateways:
+#     - name: external-gateway
+#     - name: psc-gateway
+
+# -- GCP-specific configuration. When set, GCP ingress resources are created instead of AWS ALBs. See `gcp.gateways` above.
 # @default -- disabled
 gcp:
   # -- Cloud Armor security policy name attached via GCPBackendPolicy (omit to skip)

@@ -1,3 +1,4 @@
+{{- $internet := include "ctl-api.internet" . }}
 {{- if .Values.gcp.enabled }}
 ---
 apiVersion: gateway.networking.k8s.io/v1
@@ -10,9 +11,16 @@ metadata:
     app.nuon.co/name: {{ include "common.fullname" . }}-public
 spec:
   parentRefs:
+    {{- if $internet }}
     - kind: Gateway
       name: external-gateway
       sectionName: https
+    {{- end }}
+    {{- if .Values.gcp.privateGateway.enabled }}
+    - kind: Gateway
+      name: private-gateway
+      sectionName: https
+    {{- end }}
   hostnames:
     - {{ .Values.api.public.domain | trimSuffix "." }}
   rules:

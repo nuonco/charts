@@ -40,3 +40,8 @@ Create the name of the service account to use
 {{- default "default" .Values.serviceAccount.name }}
 {{- end }}
 {{- end }}
+
+{{- define "dashboard-ui.internet" -}}
+{{- $private := dig "privateGateway" dict (.Values.gcp | default dict) -}}
+{{- if or (not $private.enabled) (ne (toString $private.internet) "false") -}}true{{- end -}}
+{{- end }}

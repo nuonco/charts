@@ -203,6 +203,14 @@ The `env` map is passed directly into the ConfigMap consumed by all API and work
 | gcp | object | disabled | GCP-specific configuration. When enabled, GCP Gateway/HTTPRoute/HealthCheckPolicy resources are created instead of AWS ALBs. |
 | gcp.certMap | string | `""` | GCP certificate map name for the gateway |
 | gcp.enabled | bool | `false` | Enable GCP ingress resources (Gateway API). Requires the Gateway API and `networking.gke.io` CRDs to be installed on the cluster. |
+| gcp.privateGateway.address | string | `""` | Reserved regional internal address name for the private gateway, so the forwarding rule IP is stable. Leave empty for an ephemeral address. |
+| gcp.privateGateway.certificate | string | `""` | Regional Certificate Manager certificate name for the private gateway listener. Global certificate maps do not work on regional gateways. |
+| gcp.privateGateway.enabled | bool | `false` | Create a regional internal HTTPS gateway (`gke-l7-rilb`) and attach the public, auth, and MCP routes to it. Publish it to consumers with a Private Service Connect service attachment. |
+| gcp.privateGateway.internet | bool | `true` | Keep the public, auth, and MCP routes on the external gateway as well. Set to false to serve them only through the private gateway. The runner and Slack routes always stay on the external gateway. |
+| gcp.privateGateway.subnetRouter.enabled | bool | `false` | Advertise the private gateway address into the tailnet. Requires the Tailscale operator and its Connector CRD. |
+| gcp.privateGateway.subnetRouter.hostnamePrefix | string | `private-gateway` | Hostname prefix for the router device on the tailnet. |
+| gcp.privateGateway.subnetRouter.replicas | int | `1` | Router replicas. |
+| gcp.privateGateway.subnetRouter.route | string | `""` | CIDR the router advertises. Set this to the private gateway IP with a /32 prefix. |
 | image.repository | string | `""` | Container image repository |
 | image.tag | string | `""` | Container image tag |
 | nameOverride | string | `""` | Override the chart name |

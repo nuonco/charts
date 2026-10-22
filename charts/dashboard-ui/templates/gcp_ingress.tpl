@@ -1,3 +1,5 @@
+{{- $internet := include "dashboard-ui.internet" . }}
+{{- $private := dig "privateGateway" "enabled" false (.Values.gcp | default dict) }}
 {{- if .Values.gcp }}
 ---
 apiVersion: networking.gke.io/v1
@@ -30,10 +32,18 @@ metadata:
     {{- include "common.labels" . | nindent 4 }}
 spec:
   parentRefs:
+    {{- if $internet }}
     - kind: Gateway
       name: external-gateway
       namespace: ctl-api
       sectionName: https
+    {{- end }}
+    {{- if $private }}
+    - kind: Gateway
+      name: private-gateway
+      namespace: ctl-api
+      sectionName: https
+    {{- end }}
   hostnames:
     - {{ .Values.ui.alb.public_domain | trimSuffix "." }}
   rules:

@@ -68,6 +68,8 @@ gcp:
     certificates: []
     # -- Routes attached to `psc-gateway`. Same keys as `externalRoutes`.
     routes: [public, auth, mcp]
+    # -- Enable global access on the gateway's forwarding rule (GCPGatewayPolicy). It can't be added after a PSC service attachment references the forwarding rule, so leave it on unless you're sure.
+    globalAccess: true
     # -- Namespaces (besides the release namespace) whose HTTPRoutes may attach to `psc-gateway`. Add `grafana-lgtm` if it is deployed and its route should be reachable over PSC.
     allowedNamespaces: [dashboard-ui]
 

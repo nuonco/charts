@@ -104,6 +104,7 @@ spec:
     kind: Service
     name: {{ include "common.fullname" . }}-auth
 {{- end }}
+{{- if .Values.api.admin.enabled }}
 ---
 apiVersion: gateway.networking.k8s.io/v1
 kind: Gateway
@@ -140,4 +141,5 @@ spec:
     group: ""
     kind: Service
     name: {{ include "common.fullname" . }}-admin
+{{- end }}
 {{- end }}

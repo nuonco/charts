@@ -27,6 +27,7 @@ spec:
           type: Utilization
           averageUtilization: {{ .Values.api.public.autoscaling.targetMemoryUtilizationPercentage }}
 ---
+{{- if .Values.api.admin.enabled }}
 apiVersion: autoscaling/v2
 kind: HorizontalPodAutoscaler
 metadata:
@@ -54,6 +55,7 @@ spec:
         target:
           type: Utilization
           averageUtilization: {{ .Values.api.admin.autoscaling.targetMemoryUtilizationPercentage }}
+{{- end }}
 ---
 apiVersion: autoscaling/v2
 kind: HorizontalPodAutoscaler

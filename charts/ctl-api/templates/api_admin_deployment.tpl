@@ -1,3 +1,4 @@
+{{- if .Values.api.admin.enabled }}
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -108,3 +109,4 @@ spec:
     matchLabels:
       {{- include "common.apiSelectorLabels" . | nindent 6 }}
       app.nuon.co/name: {{ include "common.fullname" . }}-admin
+{{- end }}

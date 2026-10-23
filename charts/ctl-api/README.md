@@ -1,6 +1,6 @@
 # ctl-api
 
-![Version: 0.7.0](https://img.shields.io/badge/Version-0.7.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 0.0.1](https://img.shields.io/badge/AppVersion-0.0.1-informational?style=flat-square)
+![Version: 0.8.0](https://img.shields.io/badge/Version-0.8.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 0.0.1](https://img.shields.io/badge/AppVersion-0.0.1-informational?style=flat-square)
 
 A helm chart for deploying the ctl-api (api and workers).
 
@@ -139,6 +139,7 @@ The `env` map is passed directly into the ConfigMap consumed by all API and work
 | api.admin.autoscaling.targetCPUUtilizationPercentage | int | `80` | Target CPU utilization for admin API autoscaling |
 | api.admin.autoscaling.targetMemoryUtilizationPercentage | int | `80` | Target memory utilization for admin API autoscaling |
 | api.admin.domain | string | `""` | Admin API domain |
+| api.admin.enabled | bool | `false` | Run the admin API workload (Deployment, Service, PDB, HPA, and ALB / GCP route) |
 | api.admin.port | int | `8080` | Admin API container port |
 | api.auth.autoscaling.maxReplicas | int | `3` | Maximum replicas for auth API |
 | api.auth.autoscaling.minReplicas | int | `1` | Minimum replicas for auth API |
@@ -164,6 +165,7 @@ The `env` map is passed directly into the ConfigMap consumed by all API and work
 | api.mcp.autoscaling.targetMemoryUtilizationPercentage | int | `75` | Target memory utilization for MCP API autoscaling |
 | api.mcp.domain | string | `""` | MCP API domain (e.g. mcp.<root_domain>) |
 | api.mcp.domain_certificate | string | `""` | MCP API TLS certificate ARN (AWS) or name (GCP) |
+| api.mcp.enabled | bool | `true` | Run the MCP API workload (Deployment + Service + ALB/Ingress). Defaults to true so existing installs keep the MCP API; set false to omit it. |
 | api.mcp.port | int | `8088` | MCP API container port |
 | api.nodeSelector | object | `{}` | Node selector for API pods |
 | api.public.autoscaling.maxReplicas | int | `3` | Maximum replicas for public API |

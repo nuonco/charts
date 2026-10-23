@@ -1,4 +1,6 @@
 {{- if and .Values.api.mcp.enabled .Values.gcp.enabled }}
+{{- $parents := include "ctl-api.gcpParentRefs" (dict "ctx" . "route" "mcp") | trim }}
+{{- if $parents }}
 ---
 apiVersion: gateway.networking.k8s.io/v1
 kind: HTTPRoute
@@ -10,15 +12,14 @@ metadata:
     app.nuon.co/name: {{ include "common.fullname" . }}-mcp
 spec:
   parentRefs:
-    - kind: Gateway
-      name: external-gateway
-      sectionName: https
+    {{- $parents | nindent 4 }}
   hostnames:
     - {{ .Values.api.mcp.domain | trimSuffix "." }}
   rules:
     - backendRefs:
         - name: {{ include "common.fullname" . }}-mcp
           port: 80
+{{- end }}
 ---
 # Without this, the GKE Gateway health-checks the mcp NEG with its default
 # (GET / on the serving port), which api-mcp does not answer 200 on, so the

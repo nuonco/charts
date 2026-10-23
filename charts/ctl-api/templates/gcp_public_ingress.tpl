@@ -1,4 +1,6 @@
 {{- if .Values.gcp.enabled }}
+{{- $parents := include "ctl-api.gcpParentRefs" (dict "ctx" . "route" "public") | trim }}
+{{- if $parents }}
 ---
 apiVersion: gateway.networking.k8s.io/v1
 kind: HTTPRoute
@@ -10,13 +12,12 @@ metadata:
     app.nuon.co/name: {{ include "common.fullname" . }}-public
 spec:
   parentRefs:
-    - kind: Gateway
-      name: external-gateway
-      sectionName: https
+    {{- $parents | nindent 4 }}
   hostnames:
     - {{ .Values.api.public.domain | trimSuffix "." }}
   rules:
     - backendRefs:
         - name: {{ include "common.fullname" . }}-public
           port: {{ .Values.api.public.port }}
+{{- end }}
 {{- end }}

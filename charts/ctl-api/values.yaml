@@ -48,8 +48,28 @@ envSecrets: []
 gcp:
   # -- Enable GCP ingress resources (Gateway API). Requires the Gateway API and `networking.gke.io` CRDs to be installed on the cluster.
   enabled: false
-  # -- GCP certificate map name for the gateway
+  # -- Scope of the external gateway and its certificate: `global` (global external Application LB, certificate attached via a Certificate Manager certificate map) or `regional` (regional external Application LB, regional Certificate Manager certificates attached to the HTTPS listener). Regional requires a proxy-only subnet in the cluster's region.
+  scope: global
+  # -- Certificate Manager certificate map name. Required when `scope: global`.
   certMap: ""
+  # -- Regional Certificate Manager certificate names (must be in the cluster's region). Required when `scope: regional`.
+  certificates: []
+  # -- Routes attached to `external-gateway`. Valid keys: `public`, `runner`, `auth`, `mcp`, `slack`, `dashboard_admin`. A route listed here and in `psc.routes` attaches to both gateways; a route in neither gets no HTTPRoute. The admin route always stays on `internal-gateway`.
+  externalRoutes: [public, runner, auth, mcp, slack, dashboard_admin]
+  # -- Internal `gke-l7-rilb` gateway (`psc-gateway`) meant to be published as a Private Service Connect service attachment. The service attachment and PSC NAT subnet are created outside the chart. Requires the proxy-only subnet.
+  psc:
+    # -- Create `psc-gateway`
+    enabled: false
+    # -- Name of a pre-created regional static internal IP for the gateway, so its forwarding rule has a known address
+    addressName: ""
+    # -- Regional Certificate Manager certificate names attached to the HTTPS listener (must be in the cluster's region)
+    certificates: []
+    # -- Routes attached to `psc-gateway`. Same keys as `externalRoutes`.
+    routes: [public, auth, mcp]
+    # -- Enable global access on the gateway's forwarding rule (GCPGatewayPolicy). It can't be added after a PSC service attachment references the forwarding rule, so leave it on unless you're sure.
+    globalAccess: true
+    # -- Namespaces (besides the release namespace) whose HTTPRoutes may attach to `psc-gateway`. Add `grafana-lgtm` if it is deployed and its route should be reachable over PSC.
+    allowedNamespaces: [dashboard-ui]
 
 auth:
   # -- Enable the auth API endpoint

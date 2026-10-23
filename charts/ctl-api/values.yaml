@@ -50,6 +50,24 @@ gcp:
   enabled: false
   # -- GCP certificate map name for the gateway
   certMap: ""
+  privateGateway:
+    # -- Create a regional internal HTTPS gateway (`gke-l7-rilb`) and attach the public, auth, and MCP routes to it. Publish it to consumers with a Private Service Connect service attachment.
+    enabled: false
+    # -- Regional Certificate Manager certificate name for the private gateway listener. Global certificate maps do not work on regional gateways.
+    certificate: ""
+    # -- Reserved regional internal address name for the private gateway, so the forwarding rule IP is stable. Leave empty for an ephemeral address.
+    address: ""
+    # -- Keep the public, auth, and MCP routes on the external gateway as well. Set to false to serve them only through the private gateway. The runner and Slack routes always stay on the external gateway.
+    internet: true
+    # -- Advertise the private gateway address into the tailnet. Requires the Tailscale operator and its Connector CRD.
+    subnetRouter:
+      enabled: false
+      # -- CIDR the router advertises. Set this to the private gateway IP with a /32 prefix.
+      route: ""
+      # -- Hostname prefix for the router device on the tailnet.
+      hostnamePrefix: private-gateway
+      # -- Router replicas.
+      replicas: 1
 
 auth:
   # -- Enable the auth API endpoint

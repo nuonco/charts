@@ -40,3 +40,8 @@ Create the name of the service account to use
 {{- default "default" .Values.serviceAccount.name }}
 {{- end }}
 {{- end }}
+
+{{- define "ctl-api.internet" -}}
+{{- $private := .Values.gcp.privateGateway | default dict -}}
+{{- if or (not $private.enabled) (ne (toString $private.internet) "false") -}}true{{- end -}}
+{{- end }}

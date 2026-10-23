@@ -1,0 +1,65 @@
+config:
+  # required
+  runnerId: ""
+  # required
+  apiUrl: ""
+  debug: false
+
+# Additional runner env vars the chart does not model in config. Rendered into
+# a plaintext ConfigMap: names that collide with chart-managed vars or look
+# like secrets (TOKEN, SECRET, PASSWORD, API_KEY, ...) fail the render.
+extraEnv: {}
+
+command: install
+
+existingSecret: ""
+existingSecretKey: "RUNNER_API_TOKEN"
+
+image:
+  repository: ""
+  # set exactly one of digest or tag; digest is preferred for immutability
+  digest: ""
+  tag: ""
+  pullPolicy: IfNotPresent
+
+podIdentity:
+  existingServiceAccount: ""
+
+podLabels: {}
+podAnnotations: {}
+nodeSelector: {}
+tolerations: []
+affinity: {}
+topologySpreadConstraints: []
+
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 1
+  targetCPUUtilizationPercentage: 80
+
+resources:
+  requests:
+    cpu: 750m
+    memory: 1.5Gi
+    ephemeral-storage: 10Gi
+  limits:
+    cpu: "2"
+    memory: 4Gi
+    ephemeral-storage: 100Gi
+
+node_pool:
+  enabled: false
+  expireAfter: 732h
+  node_class_ref:
+    group: karpenter.k8s.aws
+    kind: EC2NodeClass
+    name: default
+  capacity_types:
+    - on-demand
+  # docs: https://karpenter.sh/v0.37/reference/instance-types/#t3amedium
+  instance_type:
+    name: t3a.medium
+    cpu: 2
+    memory: 4096
+  runner_count: 1

@@ -1,0 +1,10 @@
+config:
+  apiUrl: https://runner.example.com
+  runnerId: runner-id
+image:
+  repository: public.ecr.aws/p7e3r5y0/runner
+  digest: sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+existingSecret: runner-token
+existingSecretKey: RUNNER_API_TOKEN
+podIdentity:
+  existingServiceAccount: runner

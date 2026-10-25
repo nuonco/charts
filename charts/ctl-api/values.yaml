@@ -50,6 +50,8 @@ gcp:
   enabled: false
   # -- GCP certificate map name for the gateway
   certMap: ""
+  # -- Cloud Armor security policy name attached via GCPBackendPolicy (omit to skip)
+  securityPolicy: ""
 
 auth:
   # -- Enable the auth API endpoint

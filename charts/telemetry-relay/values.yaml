@@ -22,6 +22,8 @@ environmentReceiver:
 
 gcp:
   enabled: false
+  # -- Cloud Armor security policy name attached to the existing GCPBackendPolicy (omit to skip)
+  securityPolicy: ""
 
 aws:
   enabled: false

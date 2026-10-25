@@ -44,4 +44,22 @@ spec:
     group: ""
     kind: Service
     name: {{ include "common.fullname" . }}-mcp
+{{- if .Values.gcp.securityPolicy }}
+---
+apiVersion: networking.gke.io/v1
+kind: GCPBackendPolicy
+metadata:
+  name: {{ include "common.fullname" . }}-mcp
+  namespace: {{ .Release.Namespace }}
+spec:
+  default:
+    securityPolicy: {{ .Values.gcp.securityPolicy | quote }}
+    logging:
+      enabled: true
+      sampleRate: 1000000
+  targetRef:
+    group: ""
+    kind: Service
+    name: {{ include "common.fullname" . }}-mcp
+{{- end }}
 {{- end }}

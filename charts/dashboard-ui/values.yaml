@@ -29,7 +29,9 @@ envSecrets: []
 
 # -- GCP-specific configuration. When set, GCP ingress resources are created instead of AWS ALBs.
 # @default -- disabled
-gcp: {}
+gcp:
+  # -- Cloud Armor security policy name attached via GCPBackendPolicy (omit to skip)
+  securityPolicy: ""
 
 ui:
   # -- UI container port

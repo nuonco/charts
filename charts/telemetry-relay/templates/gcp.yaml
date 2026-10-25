@@ -54,6 +54,9 @@ spec:
     timeoutSec: 40
     connectionDraining:
       drainingTimeoutSec: 60
+    {{- with .Values.gcp.securityPolicy }}
+    securityPolicy: {{ . | quote }}
+    {{- end }}
   targetRef:
     group: ""
     kind: Service

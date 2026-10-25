@@ -60,6 +60,21 @@ spec:
     group: ""
     kind: Service
     name: {{ include "common.fullname" . }}-public
+{{- if .Values.gcp.securityPolicy }}
+---
+apiVersion: networking.gke.io/v1
+kind: GCPBackendPolicy
+metadata:
+  name: {{ include "common.fullname" . }}-public
+  namespace: {{ .Release.Namespace }}
+spec:
+  default:
+    securityPolicy: {{ .Values.gcp.securityPolicy | quote }}
+  targetRef:
+    group: ""
+    kind: Service
+    name: {{ include "common.fullname" . }}-public
+{{- end }}
 ---
 apiVersion: networking.gke.io/v1
 kind: HealthCheckPolicy
@@ -81,6 +96,21 @@ spec:
     group: ""
     kind: Service
     name: {{ include "common.fullname" . }}-runner
+{{- if .Values.gcp.securityPolicy }}
+---
+apiVersion: networking.gke.io/v1
+kind: GCPBackendPolicy
+metadata:
+  name: {{ include "common.fullname" . }}-runner
+  namespace: {{ .Release.Namespace }}
+spec:
+  default:
+    securityPolicy: {{ .Values.gcp.securityPolicy | quote }}
+  targetRef:
+    group: ""
+    kind: Service
+    name: {{ include "common.fullname" . }}-runner
+{{- end }}
 {{- if .Values.auth.enabled }}
 ---
 apiVersion: networking.gke.io/v1
@@ -103,6 +133,21 @@ spec:
     group: ""
     kind: Service
     name: {{ include "common.fullname" . }}-auth
+{{- if .Values.gcp.securityPolicy }}
+---
+apiVersion: networking.gke.io/v1
+kind: GCPBackendPolicy
+metadata:
+  name: {{ include "common.fullname" . }}-auth
+  namespace: {{ .Release.Namespace }}
+spec:
+  default:
+    securityPolicy: {{ .Values.gcp.securityPolicy | quote }}
+  targetRef:
+    group: ""
+    kind: Service
+    name: {{ include "common.fullname" . }}-auth
+{{- end }}
 {{- end }}
 {{- if .Values.api.admin.enabled }}
 ---

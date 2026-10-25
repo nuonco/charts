@@ -36,21 +36,34 @@ jobs:
         run: echo "${{ secrets.GITHUB_TOKEN }}" | helm registry login ${{ env.REGISTRY }} -u ${{ github.actor }} --password-stdin
 
       - name: Package and push ${{ matrix.chart }}
+        id: package
         run: |
+          set -euo pipefail
           chart_dir="charts/${{ matrix.chart }}"
-          helm package "${chart_dir}"
-          chart_version=$(grep '^version:' "${chart_dir}/Chart.yaml" | awk '{print $2}')
           chart_name=${{ matrix.chart }}
-          helm push "${chart_name}-${chart_version}.tgz" "oci://${{ env.REGISTRY }}/${{ env.REPO_OWNER }}/charts"
-
-      - name: Tag release for ${{ matrix.chart }}
-        run: |
-          chart_dir="charts/${{ matrix.chart }}"
           chart_version=$(grep '^version:' "${chart_dir}/Chart.yaml" | awk '{print $2}')
-          tag_name="${{ matrix.chart }}-v${chart_version}"
-          if git ls-remote --exit-code --tags origin "${tag_name}" >/dev/null; then
-            echo "tag ${tag_name} already exists; skipping"
+          helm package "${chart_dir}"
+          helm push "${chart_name}-${chart_version}.tgz" "oci://${{ env.REGISTRY }}/${{ env.REPO_OWNER }}/charts"
+          echo "version=${chart_version}" >> "$GITHUB_OUTPUT"
+          echo "tgz=${chart_name}-${chart_version}.tgz" >> "$GITHUB_OUTPUT"
+
+      # Publishes the packaged chart as a GitHub release asset so it can be
+      # consumed by URL, e.g. from the terraform helm provider:
+      #   chart = "https://github.com/nuonco/charts/releases/download/<chart>-v<version>/<chart>-<version>.tgz"
+      # Reuses the tag if it already exists, so previously tagged versions get
+      # backfilled with a release.
+      - name: Publish GitHub release for ${{ matrix.chart }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          tag_name="${{ matrix.chart }}-v${{ steps.package.outputs.version }}"
+          if gh release view "${tag_name}" >/dev/null 2>&1; then
+            echo "release ${tag_name} already exists; skipping"
             exit 0
           fi
-          git tag "${tag_name}"
-          git push origin "refs/tags/${tag_name}"
+          gh release create "${tag_name}" "${{ steps.package.outputs.tgz }}" \
+            --target "${{ github.sha }}" \
+            --title "${tag_name}" \
+            --notes "Helm chart ${{ matrix.chart }} ${{ steps.package.outputs.version }}" \
+            --latest=false

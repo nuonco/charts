@@ -54,6 +54,9 @@ metadata:
 spec:
   default:
     securityPolicy: {{ .Values.gcp.securityPolicy | quote }}
+    logging:
+      enabled: true
+      sampleRate: 1000000
   targetRef:
     group: ""
     kind: Service

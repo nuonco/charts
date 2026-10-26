@@ -32,15 +32,24 @@ envSecrets: []
 # `[{name: external-gateway, namespace: ctl-api, sectionName: https}]`. An empty list renders no HTTPRoute.
 #
 # gcp:
+#   enabled: true
 #   gateways:
 #     - name: external-gateway
 #     - name: psc-gateway
 
-# -- GCP-specific configuration. When set, GCP ingress resources are created instead of AWS ALBs. See `gcp.gateways` above.
+# -- GCP-specific configuration. When `gcp.enabled`, GCP ingress resources are created instead of AWS ALBs. See `gcp.gateways` above.
 # @default -- disabled
 gcp:
-  # -- Cloud Armor security policy name attached via GCPBackendPolicy (omit to skip)
+  # -- Create GCP ingress resources (HTTPRoute, HealthCheckPolicy, GCPBackendPolicy) instead of the AWS ALB Ingress. Requires the Gateway API and `networking.gke.io` CRDs.
+  enabled: false
+  # -- Cloud Armor security policy name attached via GCPBackendPolicy (omit to skip Cloud Armor; the GCPBackendPolicy is always created for `logging`)
   securityPolicy: ""
+  # -- Backend service access logging, set on each backend's GCPBackendPolicy
+  logging:
+    # -- Enable LB access logging for the backends
+    enabled: true
+    # -- Fraction of requests logged, in millionths (`1000000` logs every request)
+    sampleRate: 1000000
 
 ui:
   # -- UI container port

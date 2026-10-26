@@ -51,3 +51,66 @@ can skip the HTTPRoute.
   sectionName: https
 {{- end }}
 {{- end }}
+
+{{/*
+HealthCheckPolicy and GCPBackendPolicy for a Service behind external-gateway or psc-gateway. Every such
+backend renders through this, so none can exist without a GCPBackendPolicy. Pass the root context, the
+Service name, its port and the health check path:
+
+  {{- include "ctl-api.gcpBackend" (dict "ctx" . "service" (printf "%s-public" (include "common.fullname" .)) "port" .Values.api.public.port "path" .Values.api.readiness_probe) }}
+
+The GCPBackendPolicy is always rendered: it sets access logging from gcp.logging and attaches
+gcp.securityPolicy when it is set. Resource names
+("<service>-hc", "<service>") must not change: Helm would delete and recreate them, leaving the backend
+without its Cloud Armor policy in between.
+*/}}
+{{- define "ctl-api.gcpBackend" -}}
+{{- $ctx := .ctx }}
+{{- $logging := $ctx.Values.gcp.logging | default dict }}
+{{- if and $logging.enabled (or (lt ($logging.sampleRate | int) 0) (gt ($logging.sampleRate | int) 1000000)) }}
+{{- fail (printf "gcp.logging.sampleRate must be between 0 and 1000000 (got %v)" $logging.sampleRate) }}
+{{- end }}
+---
+apiVersion: networking.gke.io/v1
+kind: HealthCheckPolicy
+metadata:
+  name: {{ .service }}-hc
+  namespace: {{ $ctx.Release.Namespace }}
+spec:
+  default:
+    checkIntervalSec: 5
+    timeoutSec: 2
+    healthyThreshold: 2
+    unhealthyThreshold: 2
+    config:
+      type: HTTP
+      httpHealthCheck:
+        requestPath: {{ .path }}
+        port: {{ .port }}
+  targetRef:
+    group: ""
+    kind: Service
+    name: {{ .service }}
+---
+apiVersion: networking.gke.io/v1
+kind: GCPBackendPolicy
+metadata:
+  name: {{ .service }}
+  namespace: {{ $ctx.Release.Namespace }}
+spec:
+  default:
+    {{- with $ctx.Values.gcp.securityPolicy }}
+    securityPolicy: {{ . | quote }}
+    {{- end }}
+    logging:
+      {{- if $logging.enabled }}
+      enabled: true
+      sampleRate: {{ $logging.sampleRate | int }}
+      {{- else }}
+      enabled: false
+      {{- end }}
+  targetRef:
+    group: ""
+    kind: Service
+    name: {{ .service }}
+{{- end }}

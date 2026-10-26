@@ -1,47 +1,9 @@
-{{- if .Values.gcp }}
+{{- if (.Values.gcp | default dict).enabled }}
 {{- $gateways := list (dict "name" "external-gateway" "namespace" "ctl-api" "sectionName" "https") }}
 {{- if hasKey .Values.gcp "gateways" }}
 {{- $gateways = .Values.gcp.gateways | default list }}
 {{- end }}
----
-apiVersion: networking.gke.io/v1
-kind: HealthCheckPolicy
-metadata:
-  name: {{ include "common.fullname" . }}-hc
-  namespace: {{ .Release.Namespace }}
-spec:
-  default:
-    checkIntervalSec: 5
-    timeoutSec: 2
-    healthyThreshold: 2
-    unhealthyThreshold: 2
-    config:
-      type: HTTP
-      httpHealthCheck:
-        requestPath: {{ .Values.ui.readiness_probe | default "/" }}
-        port: {{ .Values.ui.port }}
-  targetRef:
-    group: ""
-    kind: Service
-    name: {{ include "common.fullname" . }}
-{{- if .Values.gcp.securityPolicy }}
----
-apiVersion: networking.gke.io/v1
-kind: GCPBackendPolicy
-metadata:
-  name: {{ include "common.fullname" . }}
-  namespace: {{ .Release.Namespace }}
-spec:
-  default:
-    securityPolicy: {{ .Values.gcp.securityPolicy | quote }}
-    logging:
-      enabled: true
-      sampleRate: 1000000
-  targetRef:
-    group: ""
-    kind: Service
-    name: {{ include "common.fullname" . }}
-{{- end }}
+{{- include "dashboard-ui.gcpBackend" (dict "ctx" . "service" (include "common.fullname" .) "port" .Values.ui.port "path" (.Values.ui.readiness_probe | default "/")) }}
 {{- if $gateways }}
 ---
 apiVersion: gateway.networking.k8s.io/v1

@@ -52,8 +52,14 @@ gcp:
   scope: global
   # -- Certificate Manager certificate map name. Required when `scope: global`.
   certMap: ""
-  # -- Cloud Armor security policy name attached via GCPBackendPolicy (omit to skip)
+  # -- Cloud Armor security policy name attached via GCPBackendPolicy (omit to skip Cloud Armor; the GCPBackendPolicy is always created for `logging`)
   securityPolicy: ""
+  # -- Backend service access logging, set on each backend's GCPBackendPolicy
+  logging:
+    # -- Enable LB access logging for the backends
+    enabled: true
+    # -- Fraction of requests logged, in millionths (`1000000` logs every request)
+    sampleRate: 1000000
   # -- Regional Certificate Manager certificate names (must be in the cluster's region). Required when `scope: regional`.
   certificates: []
   # -- Routes attached to `external-gateway`. Valid keys: `public`, `runner`, `auth`, `mcp`, `slack`, `dashboard_admin`. A route listed here and in `psc.routes` attaches to both gateways; a route in neither gets no HTTPRoute. The admin API (`ctl-api-admin`) is rejected here and in `psc.routes`; it is only ever served on `internal-gateway`.

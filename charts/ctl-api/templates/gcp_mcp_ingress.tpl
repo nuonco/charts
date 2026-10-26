@@ -20,47 +20,11 @@ spec:
         - name: {{ include "common.fullname" . }}-mcp
           port: 80
 {{- end }}
----
-# Without this, the GKE Gateway health-checks the mcp NEG with its default
-# (GET / on the serving port), which api-mcp does not answer 200 on, so the
-# NEG never goes healthy and the ALB returns "no healthy upstream". Mirrors the
-# per-service HealthCheckPolicies in gcp_gateway.tpl.
-apiVersion: networking.gke.io/v1
-kind: HealthCheckPolicy
-metadata:
-  name: {{ include "common.fullname" . }}-mcp-hc
-  namespace: {{ .Release.Namespace }}
-spec:
-  default:
-    checkIntervalSec: 5
-    timeoutSec: 2
-    healthyThreshold: 2
-    unhealthyThreshold: 2
-    config:
-      type: HTTP
-      httpHealthCheck:
-        requestPath: {{ .Values.api.readiness_probe }}
-        port: {{ .Values.api.mcp.port }}
-  targetRef:
-    group: ""
-    kind: Service
-    name: {{ include "common.fullname" . }}-mcp
-{{- if .Values.gcp.securityPolicy }}
----
-apiVersion: networking.gke.io/v1
-kind: GCPBackendPolicy
-metadata:
-  name: {{ include "common.fullname" . }}-mcp
-  namespace: {{ .Release.Namespace }}
-spec:
-  default:
-    securityPolicy: {{ .Values.gcp.securityPolicy | quote }}
-    logging:
-      enabled: true
-      sampleRate: 1000000
-  targetRef:
-    group: ""
-    kind: Service
-    name: {{ include "common.fullname" . }}-mcp
-{{- end }}
+{{- /*
+Without this, the GKE Gateway health-checks the mcp NEG with its default
+(GET / on the serving port), which api-mcp does not answer 200 on, so the
+NEG never goes healthy and the ALB returns "no healthy upstream". Mirrors the
+HealthCheckPolicies of the other gateway backends (ctl-api.gcpBackend).
+*/}}
+{{- include "ctl-api.gcpBackend" (dict "ctx" . "service" (printf "%s-mcp" (include "common.fullname" .)) "port" .Values.api.mcp.port "path" .Values.api.readiness_probe) }}
 {{- end }}

@@ -1,4 +1,6 @@
 {{- if and .Values.api.dashboard_admin.enabled .Values.api.dashboard_admin.alb.enabled .Values.gcp.enabled }}
+{{- $parents := include "ctl-api.gcpParentRefs" (dict "ctx" . "route" "dashboard_admin") | trim }}
+{{- if $parents }}
 ---
 apiVersion: gateway.networking.k8s.io/v1
 kind: HTTPRoute
@@ -10,15 +12,14 @@ metadata:
     app.nuon.co/name: {{ include "common.fullname" . }}-dashboard-admin
 spec:
   parentRefs:
-    - kind: Gateway
-      name: external-gateway
-      sectionName: https
+    {{- $parents | nindent 4 }}
   hostnames:
     - {{ .Values.api.dashboard_admin.domain | trimSuffix "." }}
   rules:
     - backendRefs:
         - name: {{ include "common.fullname" . }}-dashboard-admin
           port: 80
+{{- end }}
 ---
 apiVersion: networking.gke.io/v1
 kind: HealthCheckPolicy

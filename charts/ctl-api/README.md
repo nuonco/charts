@@ -1,6 +1,6 @@
 # ctl-api
 
-![Version: 0.8.0](https://img.shields.io/badge/Version-0.8.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 0.0.1](https://img.shields.io/badge/AppVersion-0.0.1-informational?style=flat-square)
+![Version: 0.9.0](https://img.shields.io/badge/Version-0.9.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 0.0.1](https://img.shields.io/badge/AppVersion-0.0.1-informational?style=flat-square)
 
 A helm chart for deploying the ctl-api (api and workers).
 
@@ -203,8 +203,19 @@ The `env` map is passed directly into the ConfigMap consumed by all API and work
 | environment | string | `""` | Deployment environment name (e.g. `production`, `staging`) |
 | fullnameOverride | string | `""` | Override the full release name |
 | gcp | object | disabled | GCP-specific configuration. When enabled, GCP Gateway/HTTPRoute/HealthCheckPolicy resources are created instead of AWS ALBs. |
-| gcp.certMap | string | `""` | GCP certificate map name for the gateway |
+| gcp.certMap | string | `""` | Certificate Manager certificate map name. Required when `scope: global`. |
+| gcp.certificates | list | `[]` | Regional Certificate Manager certificate names (must be in the cluster's region). Required when `scope: regional`. |
 | gcp.enabled | bool | `false` | Enable GCP ingress resources (Gateway API). Requires the Gateway API and `networking.gke.io` CRDs to be installed on the cluster. |
+| gcp.externalRoutes | list | `["public","runner","auth","mcp","slack","dashboard_admin"]` | Routes attached to `external-gateway`. Valid keys: `public`, `runner`, `auth`, `mcp`, `slack`, `dashboard_admin`. A route listed here and in `psc.routes` attaches to both gateways; a route in neither gets no HTTPRoute. The admin API (`ctl-api-admin`) is rejected here and in `psc.routes`; it is only ever served on `internal-gateway`. |
+| gcp.psc | object | `{"addressName":"","allowedNamespaces":["dashboard-ui"],"certificates":[],"enabled":false,"globalAccess":true,"routes":["public","auth","mcp"]}` | Internal `gke-l7-rilb` gateway (`psc-gateway`) meant to be published as a Private Service Connect service attachment. The service attachment and PSC NAT subnet are created outside the chart. Requires the proxy-only subnet. |
+| gcp.psc.addressName | string | `""` | Name of a pre-created regional static internal IP for the gateway, so its forwarding rule has a known address |
+| gcp.psc.allowedNamespaces | list | `["dashboard-ui"]` | Namespaces (besides the release namespace) whose HTTPRoutes may attach to `psc-gateway`. Add `grafana-lgtm` if it is deployed and its route should be reachable over PSC. |
+| gcp.psc.certificates | list | `[]` | Regional Certificate Manager certificate names attached to the HTTPS listener (must be in the cluster's region) |
+| gcp.psc.enabled | bool | `false` | Create `psc-gateway` |
+| gcp.psc.globalAccess | bool | `true` | Enable global access on the gateway's forwarding rule (GCPGatewayPolicy). It can't be added after a PSC service attachment references the forwarding rule, so leave it on unless you're sure. |
+| gcp.psc.routes | list | `["public","auth","mcp"]` | Routes attached to `psc-gateway`. Same keys as `externalRoutes`; the admin API is rejected (validated even when `enabled: false`). |
+| gcp.scope | string | `"global"` | Scope of the external gateway and its certificate: `global` (global external Application LB, certificate attached via a Certificate Manager certificate map) or `regional` (regional external Application LB, regional Certificate Manager certificates attached to the HTTPS listener). Regional requires a proxy-only subnet in the cluster's region. |
+| gcp.securityPolicy | string | `""` | Cloud Armor security policy name attached via GCPBackendPolicy (omit to skip) |
 | image.repository | string | `""` | Container image repository |
 | image.tag | string | `""` | Container image tag |
 | nameOverride | string | `""` | Override the chart name |

@@ -6,6 +6,14 @@ public runner auth mcp slack dashboard_admin
 {{- end }}
 
 {{/*
+Route keys that must never attach to external-gateway or psc-gateway. The admin API (ctl-api-admin) is
+unauthenticated and only ever routes through internal-gateway. Hardcoded so values can't override it.
+*/}}
+{{- define "ctl-api.gcpDeniedRouteKeys" -}}
+admin api_admin api-admin ctl-api-admin ctl_api_admin
+{{- end }}
+
+{{/*
 parentRefs for a GCP HTTPRoute. Pass a dict with the root context and the route key:
 
   {{ include "ctl-api.gcpParentRefs" (dict "ctx" . "route" "public") }}
@@ -17,12 +25,17 @@ can skip the HTTPRoute.
 {{- define "ctl-api.gcpParentRefs" -}}
 {{- $gcp := .ctx.Values.gcp }}
 {{- $keys := splitList " " (include "ctl-api.gcpRouteKeys" .) }}
+{{- $denied := splitList " " (include "ctl-api.gcpDeniedRouteKeys" .) }}
 {{- $external := $gcp.externalRoutes | default list }}
 {{- $psc := list }}
 {{- if $gcp.psc.enabled }}
 {{- $psc = $gcp.psc.routes | default list }}
 {{- end }}
-{{- range (concat $external $psc) }}
+{{- /* Validate psc.routes even when psc is disabled, so a denied key can't lie dormant until it's enabled. */}}
+{{- range (concat $external ($gcp.psc.routes | default list)) }}
+{{- if has . $denied }}
+{{- fail (printf "GCP route %q is the admin API and must never be listed in gcp.externalRoutes or gcp.psc.routes; it is only served on internal-gateway" .) }}
+{{- end }}
 {{- if not (has . $keys) }}
 {{- fail (printf "unknown GCP route %q in gcp.externalRoutes / gcp.psc.routes (valid: %s)" . (join ", " $keys)) }}
 {{- end }}

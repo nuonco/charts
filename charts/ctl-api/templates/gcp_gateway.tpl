@@ -10,8 +10,10 @@ metadata:
   name: external-gateway
   namespace: {{ .Release.Namespace }}
   labels:
-    # The public external-dns instance filters on this label so it never publishes
+    # The public external-dns instance filters on this label
+    # (--gateway-label-filter=nuon.co/external-dns=public) so it never publishes
     # the internal IPs of other gateways (e.g. psc-gateway) into the public zone.
+    # psc-gateway routes are also separate HTTPRoutes that opt out of external-dns.
     nuon.co/external-dns: public
   {{- if eq $scope "global" }}
   annotations:

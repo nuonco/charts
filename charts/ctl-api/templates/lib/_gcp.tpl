@@ -14,18 +14,22 @@ admin api_admin api-admin ctl-api-admin ctl_api_admin
 {{- end }}
 
 {{/*
-parentRefs for a GCP HTTPRoute. Pass a dict with the root context and the route key:
+HTTPRoutes for a GCP route key. Pass the root context, the route key, the route name, its hostname and
+the backend port (the backend Service shares the route name):
 
-  {{ include "ctl-api.gcpParentRefs" (dict "ctx" . "route" "public") }}
+  {{- include "ctl-api.gcpHTTPRoutes" (dict "ctx" . "route" "public" "name" (printf "%s-public" (include "common.fullname" .)) "hostname" .Values.api.public.domain "port" .Values.api.public.port) }}
 
-The route attaches to external-gateway when its key is in gcp.externalRoutes, and to psc-gateway when
-gcp.psc.enabled and its key is in gcp.psc.routes. Renders nothing if it attaches to neither, so callers
-can skip the HTTPRoute.
+Renders "<name>" on external-gateway when the key is in gcp.externalRoutes, and "<name>-psc" on
+psc-gateway when gcp.psc.enabled and the key is in gcp.psc.routes. Each route has a single parent:
+external-dns publishes the address of every parent gateway, and psc-gateway's internal VIP must never
+reach public DNS. The psc route also opts out of external-dns entirely. Renders nothing if the key
+attaches to neither gateway.
 */}}
-{{- define "ctl-api.gcpParentRefs" -}}
-{{- $gcp := .ctx.Values.gcp }}
-{{- $keys := splitList " " (include "ctl-api.gcpRouteKeys" .) }}
-{{- $denied := splitList " " (include "ctl-api.gcpDeniedRouteKeys" .) }}
+{{- define "ctl-api.gcpHTTPRoutes" -}}
+{{- $ctx := .ctx }}
+{{- $gcp := $ctx.Values.gcp }}
+{{- $keys := splitList " " (include "ctl-api.gcpRouteKeys" $ctx) }}
+{{- $denied := splitList " " (include "ctl-api.gcpDeniedRouteKeys" $ctx) }}
 {{- $external := $gcp.externalRoutes | default list }}
 {{- $psc := list }}
 {{- if $gcp.psc.enabled }}
@@ -40,15 +44,38 @@ can skip the HTTPRoute.
 {{- fail (printf "unknown GCP route %q in gcp.externalRoutes / gcp.psc.routes (valid: %s)" . (join ", " $keys)) }}
 {{- end }}
 {{- end }}
+{{- $routes := list }}
 {{- if has .route $external }}
-- kind: Gateway
-  name: external-gateway
-  sectionName: https
+{{- $routes = append $routes (dict "name" .name "gateway" "external-gateway") }}
 {{- end }}
 {{- if has .route $psc }}
-- kind: Gateway
-  name: psc-gateway
-  sectionName: https
+{{- $routes = append $routes (dict "name" (printf "%s-psc" .name) "gateway" "psc-gateway" "noDNS" true) }}
+{{- end }}
+{{- range $routes }}
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: {{ .name }}
+  namespace: {{ $ctx.Release.Namespace }}
+  labels:
+    {{- include "common.apiLabels" $ctx | nindent 4 }}
+    app.nuon.co/name: {{ .name }}
+  {{- if .noDNS }}
+  annotations:
+    external-dns.alpha.kubernetes.io/controller: none
+  {{- end }}
+spec:
+  parentRefs:
+    - kind: Gateway
+      name: {{ .gateway }}
+      sectionName: https
+  hostnames:
+    - {{ $.hostname | trimSuffix "." }}
+  rules:
+    - backendRefs:
+        - name: {{ $.name }}
+          port: {{ $.port }}
 {{- end }}
 {{- end }}
 

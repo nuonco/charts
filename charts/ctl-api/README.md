@@ -206,7 +206,7 @@ The `env` map is passed directly into the ConfigMap consumed by all API and work
 | gcp.certMap | string | `""` | Certificate Manager certificate map name. Required when `scope: global`. |
 | gcp.certificates | list | `[]` | Regional Certificate Manager certificate names (must be in the cluster's region). Required when `scope: regional`. |
 | gcp.enabled | bool | `false` | Enable GCP ingress resources (Gateway API). Requires the Gateway API and `networking.gke.io` CRDs to be installed on the cluster. |
-| gcp.externalRoutes | list | `["public","runner","auth","mcp","slack","dashboard_admin"]` | Routes attached to `external-gateway`. Valid keys: `public`, `runner`, `auth`, `mcp`, `slack`, `dashboard_admin`. A route listed here and in `psc.routes` attaches to both gateways; a route in neither gets no HTTPRoute. The admin API (`ctl-api-admin`) is rejected here and in `psc.routes`; it is only ever served on `internal-gateway`. |
+| gcp.externalRoutes | list | `["public","runner","auth","mcp","slack","dashboard_admin"]` | Routes attached to `external-gateway`. Valid keys: `public`, `runner`, `auth`, `mcp`, `slack`, `dashboard_admin`. A route listed here and in `psc.routes` gets one HTTPRoute per gateway (`<name>` and `<name>-psc`); a route in neither gets no HTTPRoute. The admin API (`ctl-api-admin`) is rejected here and in `psc.routes`; it is only ever served on `internal-gateway`. |
 | gcp.logging | object | `{"enabled":true,"sampleRate":1000000}` | Backend service access logging, set on each backend's GCPBackendPolicy |
 | gcp.logging.enabled | bool | `true` | Enable LB access logging for the backends |
 | gcp.logging.sampleRate | int | `1000000` | Fraction of requests logged, in millionths (`1000000` logs every request) |
@@ -216,7 +216,7 @@ The `env` map is passed directly into the ConfigMap consumed by all API and work
 | gcp.psc.certificates | list | `[]` | Regional Certificate Manager certificate names attached to the HTTPS listener (must be in the cluster's region) |
 | gcp.psc.enabled | bool | `false` | Create `psc-gateway` |
 | gcp.psc.globalAccess | bool | `true` | Enable global access on the gateway's forwarding rule (GCPGatewayPolicy). It can't be added after a PSC service attachment references the forwarding rule, so leave it on unless you're sure. |
-| gcp.psc.routes | list | `["public","auth","mcp"]` | Routes attached to `psc-gateway`. Same keys as `externalRoutes`; the admin API is rejected (validated even when `enabled: false`). |
+| gcp.psc.routes | list | `["public","auth","mcp"]` | Routes attached to `psc-gateway`, each as its own `<name>-psc` HTTPRoute annotated `external-dns.alpha.kubernetes.io/controller: none` so the gateway's internal VIP never reaches public DNS. Same keys as `externalRoutes`; the admin API is rejected (validated even when `enabled: false`). |
 | gcp.scope | string | `"global"` | Scope of the external gateway and its certificate: `global` (global external Application LB, certificate attached via a Certificate Manager certificate map) or `regional` (regional external Application LB, regional Certificate Manager certificates attached to the HTTPS listener). Regional requires a proxy-only subnet in the cluster's region. |
 | gcp.securityPolicy | string | `""` | Cloud Armor security policy name attached via GCPBackendPolicy (omit to skip Cloud Armor; the GCPBackendPolicy is always created for `logging`) |
 | image.repository | string | `""` | Container image repository |

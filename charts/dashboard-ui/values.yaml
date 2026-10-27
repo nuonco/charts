@@ -27,7 +27,9 @@ env: {}
 # @default -- `[]`
 envSecrets: []
 
-# `gcp.gateways` lists the Gateways the HTTPRoute attaches to. Each entry takes `name`, `namespace`
+# `gcp.gateways` lists the Gateways to attach to, one HTTPRoute each. The `external-gateway` route is named
+# `<fullname>`; any other is `<fullname>-<gateway name>` and annotated `external-dns.alpha.kubernetes.io/controller: none`
+# so its (internal) address never reaches public DNS. Each entry takes `name`, `namespace`
 # (default `ctl-api`) and `sectionName` (default `https`). If unset it defaults to
 # `[{name: external-gateway, namespace: ctl-api, sectionName: https}]`. An empty list renders no HTTPRoute.
 #

@@ -52,11 +52,17 @@ gcp:
   scope: global
   # -- Certificate Manager certificate map name. Required when `scope: global`.
   certMap: ""
-  # -- Cloud Armor security policy name attached via GCPBackendPolicy (omit to skip)
+  # -- Cloud Armor security policy name attached via GCPBackendPolicy (omit to skip Cloud Armor; the GCPBackendPolicy is always created for `logging`)
   securityPolicy: ""
+  # -- Backend service access logging, set on each backend's GCPBackendPolicy
+  logging:
+    # -- Enable LB access logging for the backends
+    enabled: true
+    # -- Fraction of requests logged, in millionths (`1000000` logs every request)
+    sampleRate: 1000000
   # -- Regional Certificate Manager certificate names (must be in the cluster's region). Required when `scope: regional`.
   certificates: []
-  # -- Routes attached to `external-gateway`. Valid keys: `public`, `runner`, `auth`, `mcp`, `slack`, `dashboard_admin`. A route listed here and in `psc.routes` attaches to both gateways; a route in neither gets no HTTPRoute. The admin API (`ctl-api-admin`) is rejected here and in `psc.routes`; it is only ever served on `internal-gateway`.
+  # -- Routes attached to `external-gateway`. Valid keys: `public`, `runner`, `auth`, `mcp`, `slack`, `dashboard_admin`. A route listed here and in `psc.routes` gets one HTTPRoute per gateway (`<name>` and `<name>-psc`); a route in neither gets no HTTPRoute. The admin API (`ctl-api-admin`) is rejected here and in `psc.routes`; it is only ever served on `internal-gateway`.
   externalRoutes: [public, runner, auth, mcp, slack, dashboard_admin]
   # -- Internal `gke-l7-rilb` gateway (`psc-gateway`) meant to be published as a Private Service Connect service attachment. The service attachment and PSC NAT subnet are created outside the chart. Requires the proxy-only subnet.
   psc:
@@ -66,7 +72,7 @@ gcp:
     addressName: ""
     # -- Regional Certificate Manager certificate names attached to the HTTPS listener (must be in the cluster's region)
     certificates: []
-    # -- Routes attached to `psc-gateway`. Same keys as `externalRoutes`; the admin API is rejected (validated even when `enabled: false`).
+    # -- Routes attached to `psc-gateway`, each as its own `<name>-psc` HTTPRoute annotated `external-dns.alpha.kubernetes.io/controller: none` so the gateway's internal VIP never reaches public DNS. Same keys as `externalRoutes`, except `dashboard_admin`: a PSC consumer can send any Host header, so it and the admin API are rejected (validated even when `enabled: false`).
     routes: [public, auth, mcp]
     # -- Enable global access on the gateway's forwarding rule (GCPGatewayPolicy). It can't be added after a PSC service attachment references the forwarding rule, so leave it on unless you're sure.
     globalAccess: true

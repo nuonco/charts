@@ -10,8 +10,10 @@ metadata:
   name: external-gateway
   namespace: {{ .Release.Namespace }}
   labels:
-    # The public external-dns instance filters on this label so it never publishes
+    # The public external-dns instance filters on this label
+    # (--gateway-label-filter=nuon.co/external-dns=public) so it never publishes
     # the internal IPs of other gateways (e.g. psc-gateway) into the public zone.
+    # psc-gateway routes are also separate HTTPRoutes that opt out of external-dns.
     nuon.co/external-dns: public
   {{- if eq $scope "global" }}
   annotations:
@@ -119,124 +121,10 @@ spec:
           requestRedirect:
             scheme: https
             statusCode: 301
----
-apiVersion: networking.gke.io/v1
-kind: HealthCheckPolicy
-metadata:
-  name: {{ include "common.fullname" . }}-public-hc
-  namespace: {{ .Release.Namespace }}
-spec:
-  default:
-    checkIntervalSec: 5
-    timeoutSec: 2
-    healthyThreshold: 2
-    unhealthyThreshold: 2
-    config:
-      type: HTTP
-      httpHealthCheck:
-        requestPath: {{ .Values.api.readiness_probe }}
-        port: {{ .Values.api.public.port }}
-  targetRef:
-    group: ""
-    kind: Service
-    name: {{ include "common.fullname" . }}-public
-{{- if .Values.gcp.securityPolicy }}
----
-apiVersion: networking.gke.io/v1
-kind: GCPBackendPolicy
-metadata:
-  name: {{ include "common.fullname" . }}-public
-  namespace: {{ .Release.Namespace }}
-spec:
-  default:
-    securityPolicy: {{ .Values.gcp.securityPolicy | quote }}
-    logging:
-      enabled: true
-      sampleRate: 1000000
-  targetRef:
-    group: ""
-    kind: Service
-    name: {{ include "common.fullname" . }}-public
-{{- end }}
----
-apiVersion: networking.gke.io/v1
-kind: HealthCheckPolicy
-metadata:
-  name: {{ include "common.fullname" . }}-runner-hc
-  namespace: {{ .Release.Namespace }}
-spec:
-  default:
-    checkIntervalSec: 5
-    timeoutSec: 2
-    healthyThreshold: 2
-    unhealthyThreshold: 2
-    config:
-      type: HTTP
-      httpHealthCheck:
-        requestPath: {{ .Values.api.readiness_probe }}
-        port: {{ .Values.api.runner.port }}
-  targetRef:
-    group: ""
-    kind: Service
-    name: {{ include "common.fullname" . }}-runner
-{{- if .Values.gcp.securityPolicy }}
----
-apiVersion: networking.gke.io/v1
-kind: GCPBackendPolicy
-metadata:
-  name: {{ include "common.fullname" . }}-runner
-  namespace: {{ .Release.Namespace }}
-spec:
-  default:
-    securityPolicy: {{ .Values.gcp.securityPolicy | quote }}
-    logging:
-      enabled: true
-      sampleRate: 1000000
-  targetRef:
-    group: ""
-    kind: Service
-    name: {{ include "common.fullname" . }}-runner
-{{- end }}
+{{- include "ctl-api.gcpBackend" (dict "ctx" . "service" (printf "%s-public" (include "common.fullname" .)) "port" .Values.api.public.port "path" .Values.api.readiness_probe) }}
+{{- include "ctl-api.gcpBackend" (dict "ctx" . "service" (printf "%s-runner" (include "common.fullname" .)) "port" .Values.api.runner.port "path" .Values.api.readiness_probe) }}
 {{- if .Values.auth.enabled }}
----
-apiVersion: networking.gke.io/v1
-kind: HealthCheckPolicy
-metadata:
-  name: {{ include "common.fullname" . }}-auth-hc
-  namespace: {{ .Release.Namespace }}
-spec:
-  default:
-    checkIntervalSec: 5
-    timeoutSec: 2
-    healthyThreshold: 2
-    unhealthyThreshold: 2
-    config:
-      type: HTTP
-      httpHealthCheck:
-        requestPath: {{ .Values.api.readiness_probe }}
-        port: {{ .Values.api.auth.port }}
-  targetRef:
-    group: ""
-    kind: Service
-    name: {{ include "common.fullname" . }}-auth
-{{- if .Values.gcp.securityPolicy }}
----
-apiVersion: networking.gke.io/v1
-kind: GCPBackendPolicy
-metadata:
-  name: {{ include "common.fullname" . }}-auth
-  namespace: {{ .Release.Namespace }}
-spec:
-  default:
-    securityPolicy: {{ .Values.gcp.securityPolicy | quote }}
-    logging:
-      enabled: true
-      sampleRate: 1000000
-  targetRef:
-    group: ""
-    kind: Service
-    name: {{ include "common.fullname" . }}-auth
-{{- end }}
+{{- include "ctl-api.gcpBackend" (dict "ctx" . "service" (printf "%s-auth" (include "common.fullname" .)) "port" .Values.api.auth.port "path" .Values.api.readiness_probe) }}
 {{- end }}
 {{- if .Values.api.admin.enabled }}
 ---

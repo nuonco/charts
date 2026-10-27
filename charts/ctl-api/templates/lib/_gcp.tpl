@@ -14,6 +14,15 @@ admin api_admin api-admin ctl-api-admin ctl_api_admin
 {{- end }}
 
 {{/*
+Route keys that must never attach to psc-gateway. A PSC consumer can send any Host header, so the
+dashboard admin API is kept off it the same way the admin API is kept off both gateways. Hardcoded so
+values can't override it.
+*/}}
+{{- define "ctl-api.gcpPscDeniedRouteKeys" -}}
+dashboard_admin dashboard-admin
+{{- end }}
+
+{{/*
 HTTPRoutes for a GCP route key. Pass the root context, the route key, the route name, its hostname and
 the backend port (the backend Service shares the route name):
 
@@ -30,6 +39,7 @@ attaches to neither gateway.
 {{- $gcp := $ctx.Values.gcp }}
 {{- $keys := splitList " " (include "ctl-api.gcpRouteKeys" $ctx) }}
 {{- $denied := splitList " " (include "ctl-api.gcpDeniedRouteKeys" $ctx) }}
+{{- $pscDenied := splitList " " (include "ctl-api.gcpPscDeniedRouteKeys" $ctx) }}
 {{- $external := $gcp.externalRoutes | default list }}
 {{- $psc := list }}
 {{- if $gcp.psc.enabled }}
@@ -42,6 +52,11 @@ attaches to neither gateway.
 {{- end }}
 {{- if not (has . $keys) }}
 {{- fail (printf "unknown GCP route %q in gcp.externalRoutes / gcp.psc.routes (valid: %s)" . (join ", " $keys)) }}
+{{- end }}
+{{- end }}
+{{- range ($gcp.psc.routes | default list) }}
+{{- if has . $pscDenied }}
+{{- fail (printf "GCP route %q must never be listed in gcp.psc.routes: a PSC consumer can send any Host header, so it is only served on external-gateway" .) }}
 {{- end }}
 {{- end }}
 {{- $routes := list }}

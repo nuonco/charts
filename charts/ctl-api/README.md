@@ -1,6 +1,6 @@
 # ctl-api
 
-![Version: 0.10.0](https://img.shields.io/badge/Version-0.10.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 0.0.1](https://img.shields.io/badge/AppVersion-0.0.1-informational?style=flat-square)
+![Version: 0.11.0](https://img.shields.io/badge/Version-0.11.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 0.0.1](https://img.shields.io/badge/AppVersion-0.0.1-informational?style=flat-square)
 
 A helm chart for deploying the ctl-api (api and workers).
 
@@ -18,6 +18,30 @@ The chart supports both AWS (ALB-based ingress) and GCP (Gateway API) deployment
 ```bash
 helm install ctl-api oci://ghcr.io/nuonco/charts/ctl-api --version <version>
 ```
+
+## GCP standalone NEGs
+
+When the load balancer is managed outside the cluster (for example by the install's Terraform), set
+`api.<service>.neg.enabled: true`. The chart then renders a second ClusterIP Service, `<fullname>-<service>-neg`,
+with the same selector and ports as the regular one and a `cloud.google.com/neg` annotation, so GKE creates a
+zonal NEG with a fixed name in every zone that has nodes. The regular Service is left untouched. The load
+balancer owner attaches to the NEGs by name and owns health checks, Cloud Armor, certificates and DNS; `gcp.enabled`
+can then stay `false`.
+
+The NEG name defaults to the regular Service name and can be overridden with `api.<service>.neg.name`. Health
+checks must use the serving port: NEG endpoints are pod IPs, so for the port-80 Services that is the pod port.
+
+| Service / NEG         | Service port         | Pod port             | Health check |
+| --------------------- | -------------------- | -------------------- | ------------ |
+| `<fullname>-public`   | `api.public.port`    | `api.public.port`    | `/readyz`    |
+| `<fullname>-runner`   | `api.runner.port`    | `api.runner.port`    | `/readyz`    |
+| `<fullname>-auth`     | 80                   | `api.auth.port`      | `/readyz`    |
+| `<fullname>-mcp`      | 80                   | `api.mcp.port`       | `/readyz`    |
+| `<fullname>-slack`    | 80                   | `api.slack.port`     | `/readyz`    |
+
+Tell the load balancer owner before a release adds, renames or removes one of these Services or a routed path, so
+the routing can be updated first. Delete a `-neg` Service only after its NEG has been detached from every backend
+service, or GKE cannot garbage-collect the NEG.
 
 ## OpenTelemetry export
 
@@ -147,6 +171,8 @@ The `env` map is passed directly into the ConfigMap consumed by all API and work
 | api.auth.autoscaling.targetMemoryUtilizationPercentage | int | `80` | Target memory utilization for auth API autoscaling |
 | api.auth.domain | string | `""` | Auth API domain |
 | api.auth.domain_certificate | string | `""` | Auth API TLS certificate ARN (AWS) or name (GCP) |
+| api.auth.neg.enabled | bool | `false` | Create `<fullname>-auth-neg`, a second ClusterIP Service annotated `cloud.google.com/neg` so GKE creates a standalone zonal NEG for a load balancer managed outside the cluster. See "GCP standalone NEGs". |
+| api.auth.neg.name | string | `""` | NEG name. Defaults to the regular Service name (`<fullname>-auth`). |
 | api.auth.port | int | `8080` | Auth API container port |
 | api.dashboard_admin.alb | object | `{"domain":"","domain_certificate":"","enabled":false}` | Expose dashboard-admin via a dedicated internet-facing ALB. Set `enabled: false` to keep it reachable only inside the cluster (e.g. proxied by the dashboard-ui service). |
 | api.dashboard_admin.alb.domain | string | `""` | Public domain for the ALB (external-dns hostname) |
@@ -166,6 +192,8 @@ The `env` map is passed directly into the ConfigMap consumed by all API and work
 | api.mcp.domain | string | `""` | MCP API domain (e.g. mcp.<root_domain>) |
 | api.mcp.domain_certificate | string | `""` | MCP API TLS certificate ARN (AWS) or name (GCP) |
 | api.mcp.enabled | bool | `true` | Run the MCP API workload (Deployment + Service + ALB/Ingress). Defaults to true so existing installs keep the MCP API; set false to omit it. |
+| api.mcp.neg.enabled | bool | `false` | Create `<fullname>-mcp-neg`, a second ClusterIP Service annotated `cloud.google.com/neg` so GKE creates a standalone zonal NEG for a load balancer managed outside the cluster. See "GCP standalone NEGs". |
+| api.mcp.neg.name | string | `""` | NEG name. Defaults to the regular Service name (`<fullname>-mcp`). |
 | api.mcp.port | int | `8088` | MCP API container port |
 | api.nodeSelector | object | `{}` | Node selector for API pods |
 | api.public.autoscaling.maxReplicas | int | `3` | Maximum replicas for public API |
@@ -174,6 +202,8 @@ The `env` map is passed directly into the ConfigMap consumed by all API and work
 | api.public.autoscaling.targetMemoryUtilizationPercentage | int | `80` | Target memory utilization for public API autoscaling |
 | api.public.domain | string | `""` | Public API domain |
 | api.public.domain_certificate | string | `""` | Public API TLS certificate ARN (AWS) or name (GCP) |
+| api.public.neg.enabled | bool | `false` | Create `<fullname>-public-neg`, a second ClusterIP Service annotated `cloud.google.com/neg` so GKE creates a standalone zonal NEG for a load balancer managed outside the cluster. See "GCP standalone NEGs". |
+| api.public.neg.name | string | `""` | NEG name. Defaults to the regular Service name (`<fullname>-public`). |
 | api.public.port | int | `8080` | Public API container port |
 | api.readiness_probe | object | `{}` | Readiness probe configuration for API deployments |
 | api.resources | object | `{"requests":{"cpu":"100m","memory":"128Mi"}}` | Default resources for every api deployment. Each api.<service> (public, admin, runner, auth, dashboard_admin, slack, mcp) can override this block — individual fields deep-merge over these defaults. `limits` is optional and can be omitted globally or per service. |
@@ -185,6 +215,8 @@ The `env` map is passed directly into the ConfigMap consumed by all API and work
 | api.runner.autoscaling.targetMemoryUtilizationPercentage | int | `80` | Target memory utilization for runner API autoscaling |
 | api.runner.domain | string | `""` | Runner API domain |
 | api.runner.domain_certificate | string | `""` | Runner API TLS certificate ARN (AWS) or name (GCP) |
+| api.runner.neg.enabled | bool | `false` | Create `<fullname>-runner-neg`, a second ClusterIP Service annotated `cloud.google.com/neg` so GKE creates a standalone zonal NEG for a load balancer managed outside the cluster. See "GCP standalone NEGs". |
+| api.runner.neg.name | string | `""` | NEG name. Defaults to the regular Service name (`<fullname>-runner`). |
 | api.runner.port | int | `8080` | Runner API container port |
 | api.slack.autoscaling.maxReplicas | int | `2` |  |
 | api.slack.autoscaling.minReplicas | int | `2` |  |
@@ -193,6 +225,8 @@ The `env` map is passed directly into the ConfigMap consumed by all API and work
 | api.slack.domain | string | `""` | Slack listener domain (e.g. slack.<root_domain>) |
 | api.slack.domain_certificate | string | `""` | Slack listener TLS certificate ARN (AWS) or name (GCP) |
 | api.slack.enabled | bool | `false` | Enable the Slack integration listener (deployment, service, ALB) |
+| api.slack.neg.enabled | bool | `false` | Create `<fullname>-slack-neg`, a second ClusterIP Service annotated `cloud.google.com/neg` so GKE creates a standalone zonal NEG for a load balancer managed outside the cluster. See "GCP standalone NEGs". |
+| api.slack.neg.name | string | `""` | NEG name. Defaults to the regular Service name (`<fullname>-slack`). |
 | api.slack.port | int | `8089` | Slack listener container port |
 | api.tolerations | list | `[]` | Tolerations for API pods |
 | api.topologySpreadConstraints | list | `[]` | Topology spread constraints for API pods (applied to admin, auth, public, runner, startup) |

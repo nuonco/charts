@@ -129,6 +129,11 @@ api:
     domain_certificate: ""
     # -- Auth API container port
     port: 8080
+    neg:
+      # -- Create `<fullname>-auth-neg`, a second ClusterIP Service annotated `cloud.google.com/neg` so GKE creates a standalone zonal NEG for a load balancer managed outside the cluster. See "GCP standalone NEGs".
+      enabled: false
+      # -- NEG name. Defaults to the regular Service name (`<fullname>-auth`).
+      name: ""
     autoscaling:
       # -- Minimum replicas for auth API
       minReplicas: 1
@@ -169,6 +174,11 @@ api:
     domain_certificate: ""
     # -- Slack listener container port
     port: 8089
+    neg:
+      # -- Create `<fullname>-slack-neg`, a second ClusterIP Service annotated `cloud.google.com/neg` so GKE creates a standalone zonal NEG for a load balancer managed outside the cluster. See "GCP standalone NEGs".
+      enabled: false
+      # -- NEG name. Defaults to the regular Service name (`<fullname>-slack`).
+      name: ""
     autoscaling:
       minReplicas: 2
       maxReplicas: 2
@@ -184,6 +194,11 @@ api:
     domain_certificate: ""
     # -- MCP API container port
     port: 8088
+    neg:
+      # -- Create `<fullname>-mcp-neg`, a second ClusterIP Service annotated `cloud.google.com/neg` so GKE creates a standalone zonal NEG for a load balancer managed outside the cluster. See "GCP standalone NEGs".
+      enabled: false
+      # -- NEG name. Defaults to the regular Service name (`<fullname>-mcp`).
+      name: ""
     autoscaling:
       # -- Minimum replicas for MCP API
       minReplicas: 1
@@ -200,6 +215,11 @@ api:
     domain_certificate: ""
     # -- Public API container port
     port: 8080
+    neg:
+      # -- Create `<fullname>-public-neg`, a second ClusterIP Service annotated `cloud.google.com/neg` so GKE creates a standalone zonal NEG for a load balancer managed outside the cluster. See "GCP standalone NEGs".
+      enabled: false
+      # -- NEG name. Defaults to the regular Service name (`<fullname>-public`).
+      name: ""
     autoscaling:
       # -- Minimum replicas for public API
       minReplicas: 1
@@ -216,6 +236,11 @@ api:
     domain_certificate: ""
     # -- Runner API container port
     port: 8080
+    neg:
+      # -- Create `<fullname>-runner-neg`, a second ClusterIP Service annotated `cloud.google.com/neg` so GKE creates a standalone zonal NEG for a load balancer managed outside the cluster. See "GCP standalone NEGs".
+      enabled: false
+      # -- NEG name. Defaults to the regular Service name (`<fullname>-runner`).
+      name: ""
     autoscaling:
       # -- Minimum replicas for runner API
       minReplicas: 1

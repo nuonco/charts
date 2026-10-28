@@ -52,6 +52,8 @@ gateway:
 
 This creates an HTTPRoute, HealthCheckPolicy, and GCPBackendPolicy. `gateway.hostname` is required only when GCP is enabled.
 
+When the load balancer is managed outside the cluster instead, leave `gcp.enabled` false and set `neg.enabled: true`. The chart renders a second ClusterIP Service, `<fullname>-neg`, with a `cloud.google.com/neg` annotation so GKE creates a zonal NEG with a fixed name (default `<fullname>`, override with `neg.name`) for port `4318`. The load balancer owner routes exactly `/v1/logs`, `/v1/metrics`, and `/v1/traces` to it, health-checks `/` on port `13133` (the OTLP port does not answer health probes), and should allow a backend timeout of at least 40 seconds. Delete the `-neg` Service only after its NEG has been detached from every backend service.
+
 For AWS, add instead:
 
 ```yaml

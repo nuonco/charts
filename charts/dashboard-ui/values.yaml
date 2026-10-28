@@ -53,6 +53,12 @@ gcp:
     # -- Fraction of requests logged, in millionths (`1000000` logs every request)
     sampleRate: 1000000
 
+neg:
+  # -- Create `<fullname>-neg`, a second ClusterIP Service annotated `cloud.google.com/neg` so GKE creates a standalone zonal NEG for a load balancer managed outside the cluster. The regular Service is unchanged. Health checks use the serving port (`ui.port`) and `ui.readiness_probe`.
+  enabled: false
+  # -- NEG name. Defaults to the regular Service name (`<fullname>`).
+  name: ""
+
 ui:
   # -- UI container port
   port: 4000

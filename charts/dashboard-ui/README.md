@@ -1,6 +1,6 @@
 # dashboard-ui
 
-![Version: 0.2.0](https://img.shields.io/badge/Version-0.2.0-informational?style=flat-square)
+![Version: 0.3.0](https://img.shields.io/badge/Version-0.3.0-informational?style=flat-square)
 ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square)
 ![AppVersion: 0.0.1](https://img.shields.io/badge/AppVersion-0.0.1-informational?style=flat-square)
 
@@ -20,6 +20,15 @@ The chart supports both AWS (ALB-based ingress) and GCP (Gateway API) deployment
 ```bash
 helm install ctl-api oci://ghcr.io/nuonco/charts/ctl-api --version <version>
 ```
+
+## GCP standalone NEGs
+
+When the load balancer is managed outside the cluster, set `neg.enabled: true`. The chart renders a second ClusterIP
+Service, `<fullname>-neg`, with the same selector and port as the regular one and a `cloud.google.com/neg` annotation, so
+GKE creates a zonal NEG with a fixed name (default `<fullname>`, override with `neg.name`). The load balancer owner
+attaches to it by name and health-checks `ui.readiness_probe` on the serving port (`ui.port`). `gcp.enabled` can then
+stay `false`. Tell the load balancer owner before a release renames or removes the Service, and delete the `-neg` Service
+only after its NEG has been detached from every backend service.
 
 ## Environment Variables
 
@@ -80,6 +89,8 @@ The `env` map is passed directly into the ConfigMap consumed by all dashboard-ui
 | image.repository                                 | string | `""`        | Container image repository                                                                                             |
 | image.tag                                        | string | `""`        | Container image tag                                                                                                    |
 | nameOverride                                     | string | `""`        | Override the chart name                                                                                                |
+| neg.enabled                                      | bool   | `false`     | Create `<fullname>-neg`, a second ClusterIP Service annotated `cloud.google.com/neg` so GKE creates a standalone zonal NEG for a load balancer managed outside the cluster. The regular Service is unchanged. Health checks use the serving port (`ui.port`) and `ui.readiness_probe`. |
+| neg.name                                         | string | `""`        | NEG name. Defaults to the regular Service name (`<fullname>`).                                                         |
 | serviceAccount.annotations                       | object | `{}`        | Annotations to add to the service account                                                                              |
 | serviceAccount.enabled                           | bool   | `true`      | Whether to create and use a service account                                                                            |
 | serviceAccount.name                              | string | `""`        | Service account name                                                                                                   |

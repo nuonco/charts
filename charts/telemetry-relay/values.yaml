@@ -28,6 +28,14 @@ gcp:
 aws:
   enabled: false
 
+neg:
+  # -- Create `<fullname>-neg`, a second ClusterIP Service annotated `cloud.google.com/neg` so GKE creates a
+  # standalone zonal NEG on port 4318 for a load balancer managed outside the cluster. The regular Service is
+  # unchanged. Health checks must use `/` on port 13133, not the OTLP port.
+  enabled: false
+  # -- NEG name. Defaults to the regular Service name (`<fullname>`).
+  name: ""
+
 gateway:
   name: external-gateway
   namespace: ctl-api

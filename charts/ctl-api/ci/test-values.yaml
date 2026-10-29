@@ -1,0 +1,21 @@
+auth:
+  enabled: true
+api:
+  public:
+    neg:
+      enabled: true
+  runner:
+    neg:
+      enabled: true
+  auth:
+    neg:
+      enabled: true
+  mcp:
+    enabled: true
+    neg:
+      enabled: true
+  slack:
+    enabled: true
+    neg:
+      enabled: true
+      name: custom-slack-neg

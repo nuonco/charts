@@ -27,6 +27,30 @@ The chart supports both AWS (ALB-based ingress) and GCP (Gateway API) deployment
 helm install ctl-api oci://ghcr.io/nuonco/charts/ctl-api --version <version>
 ```
 
+## GCP standalone NEGs
+
+When the load balancer is managed outside the cluster (for example by the install's Terraform), set
+`api.<service>.neg.enabled: true`. The chart then renders a second ClusterIP Service, `<fullname>-<service>-neg`,
+with the same selector and ports as the regular one and a `cloud.google.com/neg` annotation, so GKE creates a
+zonal NEG with a fixed name in every zone that has nodes. The regular Service is left untouched. The load
+balancer owner attaches to the NEGs by name and owns health checks, Cloud Armor, certificates and DNS; `gcp.enabled`
+can then stay `false`.
+
+The NEG name defaults to the regular Service name and can be overridden with `api.<service>.neg.name`. Health
+checks must use the serving port: NEG endpoints are pod IPs, so for the port-80 Services that is the pod port.
+
+| Service / NEG         | Service port         | Pod port             | Health check |
+| --------------------- | -------------------- | -------------------- | ------------ |
+| `<fullname>-public`   | `api.public.port`    | `api.public.port`    | `/readyz`    |
+| `<fullname>-runner`   | `api.runner.port`    | `api.runner.port`    | `/readyz`    |
+| `<fullname>-auth`     | 80                   | `api.auth.port`      | `/readyz`    |
+| `<fullname>-mcp`      | 80                   | `api.mcp.port`       | `/readyz`    |
+| `<fullname>-slack`    | 80                   | `api.slack.port`     | `/readyz`    |
+
+Tell the load balancer owner before a release adds, renames or removes one of these Services or a routed path, so
+the routing can be updated first. Delete a `-neg` Service only after its NEG has been detached from every backend
+service, or GKE cannot garbage-collect the NEG.
+
 ## OpenTelemetry export
 
 Disabled by default. To export metrics to an existing OTLP/HTTP collector:

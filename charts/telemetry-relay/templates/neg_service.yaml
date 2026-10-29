@@ -1,0 +1,22 @@
+{{- if .Values.neg.enabled }}
+{{- $name := include "telemetry-relay.fullname" . }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ $name }}-neg
+  labels:
+    {{- include "telemetry-relay.labels" . | nindent 4 }}
+  annotations:
+    cloud.google.com/neg: {{ dict "exposed_ports" (dict "4318" (dict "name" (.Values.neg.name | default $name))) | toJson | quote }}
+spec:
+  type: ClusterIP
+  selector:
+    {{- include "telemetry-relay.selectorLabels" . | nindent 4 }}
+  ports:
+    - name: otlp-http
+      port: 4318
+      targetPort: otlp-http
+    - name: health
+      port: 13133
+      targetPort: health
+{{- end }}

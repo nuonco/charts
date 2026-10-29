@@ -27,6 +27,15 @@ The chart supports both AWS (ALB-based ingress) and GCP (Gateway API) deployment
 helm install ctl-api oci://ghcr.io/nuonco/charts/ctl-api --version <version>
 ```
 
+## GCP standalone NEGs
+
+When the load balancer is managed outside the cluster, set `neg.enabled: true`. The chart renders a second
+ClusterIP Service, `<fullname>-neg`, with the same selector and port as the regular one and a `cloud.google.com/neg`
+annotation, so GKE creates a zonal NEG with a fixed name (default `<fullname>`, override with `neg.name`). The load
+balancer owner attaches to it by name and health-checks `ui.readiness_probe` on the serving port (`ui.port`).
+`gcp.enabled` can then stay `false`. Tell the load balancer owner before a release renames or removes the Service,
+and delete the `-neg` Service only after its NEG has been detached from every backend service.
+
 ## Environment Variables
 
 The `env` map is passed directly into the ConfigMap consumed by all API and worker pods. The following variables are supported by the ctl-api application:

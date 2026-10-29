@@ -1,4 +1,4 @@
-{{- if (.Values.gcp | default dict).enabled }}
+{{- if and .Values.ingress.enabled (.Values.gcp | default dict).enabled }}
 {{- $gateways := list (dict "name" "external-gateway" "namespace" "ctl-api" "sectionName" "https") }}
 {{- if hasKey .Values.gcp "gateways" }}
 {{- $gateways = .Values.gcp.gateways | default list }}

@@ -39,6 +39,10 @@ envSecrets: []
 #     - name: external-gateway
 #     - name: psc-gateway
 
+ingress:
+  # -- Render ingress resources: the AWS ALB Ingress, or the GCP HTTPRoute and backend policies when `gcp.enabled`. Set to `false` when the load balancer is managed outside the cluster and reaches the pods through the standalone NEG (`neg.enabled`).
+  enabled: true
+
 # -- GCP-specific configuration. When `gcp.enabled`, GCP ingress resources are created instead of AWS ALBs. See `gcp.gateways` above.
 # @default -- disabled
 gcp:

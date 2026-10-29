@@ -43,6 +43,10 @@ otel:
 # ```
 envSecrets: []
 
+ingress:
+  # -- Render ingress resources: the AWS ALB Ingresses, or the GKE Gateways, HTTPRoutes and backend policies when `gcp.enabled`. Set to `false` when the load balancer is managed outside the cluster and reaches the pods through standalone NEGs (`api.<service>.neg`). The admin API then has no route at all and is reachable only in-cluster.
+  enabled: true
+
 # -- GCP-specific configuration. When enabled, GCP Gateway/HTTPRoute/HealthCheckPolicy resources are created instead of AWS ALBs.
 # @default -- disabled
 gcp:

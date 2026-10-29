@@ -1,4 +1,4 @@
-{{- if .Values.gcp.enabled }}
+{{- if and .Values.ingress.enabled .Values.gcp.enabled }}
 {{- $scope := .Values.gcp.scope | default "global" }}
 {{- if not (has $scope (list "global" "regional")) }}
 {{- fail (printf "gcp.scope must be one of: global, regional (got %q)" $scope) }}

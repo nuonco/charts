@@ -1,4 +1,4 @@
-{{- if and .Values.api.admin.enabled (not .Values.gcp.enabled) }}
+{{- if and .Values.ingress.enabled .Values.api.admin.enabled (not .Values.gcp.enabled) }}
 ---
 apiVersion: networking.k8s.io/v1
 kind: Ingress

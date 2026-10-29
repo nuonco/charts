@@ -30,4 +30,18 @@ default_out="$(helm template ctl-api "$chart")"
 neg_count="$(printf '%s\n' "$default_out" | yq 'select(.kind == "Service" and (.metadata.name | test("-neg$"))) | .metadata.name' | grep -c . || true)"
 [ "$neg_count" = "0" ] || fail "NEG Services rendered with default values"
 
+ingress_count() {
+  printf '%s\n' "$1" | yq 'select(.kind | test("^(Ingress|Gateway|HTTPRoute|HealthCheckPolicy|GCPBackendPolicy|GCPGatewayPolicy)$")) | .kind' | grep -c -v -e '^---$' -e '^$' || true
+}
+
+gcp_args=(--set gcp.enabled=true --set gcp.certMap=test --set gcp.psc.enabled=true --set gcp.psc.addressName=test --set "gcp.psc.certificates={test}")
+
+[ "$(ingress_count "$(helm template ctl-api "$chart" -f "$chart/ci/test-values.yaml")")" != "0" ] || fail "ALB Ingresses missing with default values"
+[ "$(ingress_count "$(helm template ctl-api "$chart" -f "$chart/ci/test-values.yaml" "${gcp_args[@]}")")" != "0" ] || fail "GCP ingress resources missing with gcp.enabled"
+[ "$(ingress_count "$(helm template ctl-api "$chart" -f "$chart/ci/test-values.yaml" --set ingress.enabled=false)")" = "0" ] || fail "ALB Ingresses rendered with ingress.enabled=false"
+[ "$(ingress_count "$(helm template ctl-api "$chart" -f "$chart/ci/test-values.yaml" "${gcp_args[@]}" --set ingress.enabled=false)")" = "0" ] || fail "GCP ingress resources rendered with ingress.enabled=false"
+
+no_ingress="$(helm template ctl-api "$chart" -f "$chart/ci/test-values.yaml" "${gcp_args[@]}" --set ingress.enabled=false)"
+[ "$(printf '%s\n' "$no_ingress" | yq 'select(.kind == "Service" and (.metadata.name | test("-neg$"))) | .metadata.name' | grep -c -- '-neg$')" = "5" ] || fail "NEG Services missing with ingress.enabled=false"
+
 echo "ctl-api render tests passed"

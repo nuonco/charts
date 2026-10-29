@@ -1,6 +1,6 @@
 # dashboard-ui
 
-![Version: 0.3.0](https://img.shields.io/badge/Version-0.3.0-informational?style=flat-square)
+![Version: 0.4.0](https://img.shields.io/badge/Version-0.4.0-informational?style=flat-square)
 ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square)
 ![AppVersion: 0.0.1](https://img.shields.io/badge/AppVersion-0.0.1-informational?style=flat-square)
 
@@ -88,6 +88,7 @@ The `env` map is passed directly into the ConfigMap consumed by all dashboard-ui
 | gcp                                              | object | disabled    | GCP-specific configuration. When `gcp.enabled`, GCP ingress resources are created instead of AWS ALBs. See `gcp.gateways` above. |
 | image.repository                                 | string | `""`        | Container image repository                                                                                             |
 | image.tag                                        | string | `""`        | Container image tag                                                                                                    |
+| ingress.enabled                                  | bool   | `true`      | Render ingress resources: the AWS ALB Ingress, or the GCP HTTPRoute and backend policies when `gcp.enabled`. Set to `false` when the load balancer is managed outside the cluster and reaches the pods through the standalone NEG (`neg.enabled`). |
 | nameOverride                                     | string | `""`        | Override the chart name                                                                                                |
 | neg.enabled                                      | bool   | `false`     | Create `<fullname>-neg`, a second ClusterIP Service annotated `cloud.google.com/neg` so GKE creates a standalone zonal NEG for a load balancer managed outside the cluster. The regular Service is unchanged. Health checks use the serving port (`ui.port`) and `ui.readiness_probe`. |
 | neg.name                                         | string | `""`        | NEG name. Defaults to the regular Service name (`<fullname>`).                                                         |

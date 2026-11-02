@@ -1,6 +1,6 @@
 # ctl-api
 
-![Version: 0.11.0](https://img.shields.io/badge/Version-0.11.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 0.0.1](https://img.shields.io/badge/AppVersion-0.0.1-informational?style=flat-square)
+![Version: 0.12.0](https://img.shields.io/badge/Version-0.12.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 0.0.1](https://img.shields.io/badge/AppVersion-0.0.1-informational?style=flat-square)
 
 A helm chart for deploying the ctl-api (api and workers).
 
@@ -255,6 +255,7 @@ The `env` map is passed directly into the ConfigMap consumed by all API and work
 | gcp.securityPolicy | string | `""` | Cloud Armor security policy name attached via GCPBackendPolicy (omit to skip Cloud Armor; the GCPBackendPolicy is always created for `logging`) |
 | image.repository | string | `""` | Container image repository |
 | image.tag | string | `""` | Container image tag |
+| ingress.enabled | bool | `true` | Render ingress resources: the AWS ALB Ingresses, or the GKE Gateways, HTTPRoutes and backend policies when `gcp.enabled`. Set to `false` when the load balancer is managed outside the cluster and reaches the pods through standalone NEGs (`api.<service>.neg`). The admin API then has no route at all and is reachable only in-cluster. |
 | nameOverride | string | `""` | Override the chart name |
 | otel.additional_resource_attributes | object | `{}` | Additional OTEL resource attributes, overriding defaults. |
 | otel.enabled | bool | `false` | Enable control-plane OTLP export (currently metrics). |

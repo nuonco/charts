@@ -1,4 +1,4 @@
-{{- if not (.Values.gcp | default dict).enabled }}
+{{- if and .Values.ingress.enabled (not (.Values.gcp | default dict).enabled) }}
 ---
 apiVersion: networking.k8s.io/v1
 kind: Ingress

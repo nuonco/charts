@@ -1,4 +1,4 @@
-{{- if and .Values.api.slack.enabled .Values.gcp.enabled }}
+{{- if and .Values.ingress.enabled .Values.api.slack.enabled .Values.gcp.enabled }}
 {{- include "ctl-api.gcpHTTPRoutes" (dict "ctx" . "route" "slack" "name" (printf "%s-slack" (include "common.fullname" .)) "hostname" .Values.api.slack.domain "port" 80) }}
 {{- /*
 Without this, the GKE Gateway health-checks the slack NEG with its default

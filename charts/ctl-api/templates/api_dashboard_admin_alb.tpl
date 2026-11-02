@@ -1,4 +1,4 @@
-{{- if and .Values.api.dashboard_admin.enabled .Values.api.dashboard_admin.alb.enabled (not .Values.gcp.enabled) }}
+{{- if and .Values.ingress.enabled .Values.api.dashboard_admin.enabled .Values.api.dashboard_admin.alb.enabled (not .Values.gcp.enabled) }}
 ---
 apiVersion: networking.k8s.io/v1
 kind: Ingress

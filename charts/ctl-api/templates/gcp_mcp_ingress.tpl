@@ -1,4 +1,4 @@
-{{- if and .Values.api.mcp.enabled .Values.gcp.enabled }}
+{{- if and .Values.ingress.enabled .Values.api.mcp.enabled .Values.gcp.enabled }}
 {{- include "ctl-api.gcpHTTPRoutes" (dict "ctx" . "route" "mcp" "name" (printf "%s-mcp" (include "common.fullname" .)) "hostname" .Values.api.mcp.domain "port" 80) }}
 {{- /*
 Without this, the GKE Gateway health-checks the mcp NEG with its default

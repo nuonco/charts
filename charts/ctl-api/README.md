@@ -1,6 +1,6 @@
 # ctl-api
 
-![Version: 0.12.0](https://img.shields.io/badge/Version-0.12.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 0.0.1](https://img.shields.io/badge/AppVersion-0.0.1-informational?style=flat-square)
+![Version: 0.13.0](https://img.shields.io/badge/Version-0.13.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 0.0.1](https://img.shields.io/badge/AppVersion-0.0.1-informational?style=flat-square)
 
 A helm chart for deploying the ctl-api (api and workers).
 
@@ -18,6 +18,28 @@ The chart supports both AWS (ALB-based ingress) and GCP (Gateway API) deployment
 ```bash
 helm install ctl-api oci://ghcr.io/nuonco/charts/ctl-api --version <version>
 ```
+
+## Startup before rollout
+
+Set `startupHook.enabled: true` to run `/bin/service startup` with the target image and values in a
+blocking `pre-install,pre-upgrade` Job. Helm does not apply the new API/worker resources until it succeeds.
+Existing processes stay live during upgrades. Failure stops the release; it does not undo database changes.
+Do not use automatic rollback to an image incompatible with the migrated schema.
+
+Before enabling this option, grant the `<serviceAccount.name>-migrate` Kubernetes service account the same
+cloud identity binding as the application account (IRSA trust or GKE Workload Identity). The hook creates
+that separate account with the application's annotations and equivalent namespaced Kubernetes read permissions.
+It does not replace the application account. Names longer than 55 characters are truncated before adding `-migrate`.
+
+Databases, required `envSecrets`, and cloud identity bindings must exist before Helm runs. The hook embeds the
+target environment rather than reading the application ConfigMap, which may be absent or still from the old release.
+It uses API node selection, tolerations and resources. The Job has no automatic retries and defaults to a
+1200-second deadline (`startupHook.activeDeadlineSeconds`); set the Helm timeout higher, for example `--timeout 1h`.
+The Job and its hook RBAC remain for inspection and are replaced on the next attempt. Helm uninstall does not remove
+hook resources; remove them explicitly when tearing down the release.
+
+The sleeping startup Deployment remains available for manual maintenance. Remove automatic post-deploy startup
+actions when enabling the hook so migrations do not run twice.
 
 ## GCP standalone NEGs
 
@@ -263,6 +285,8 @@ The `env` map is passed directly into the ConfigMap consumed by all API and work
 | serviceAccount.annotations | object | `{}` | Annotations to add to the service account |
 | serviceAccount.enabled | bool | `true` | Whether to create and use a service account |
 | serviceAccount.name | string | `""` | Service account name |
+| startupHook.activeDeadlineSeconds | int | `1200` | Maximum startup Job duration. Set the Helm timeout higher than this. |
+| startupHook.enabled | bool | `false` | Run target-image startup before installing or upgrading API/worker resources. |
 | worker.autoscaling.targetCPUUtilizationPercentage | int | `80` | Target CPU utilization for worker autoscaling |
 | worker.autoscaling.targetMemoryUtilizationPercentage | int | `80` | Target memory utilization for worker autoscaling |
 | worker.instances | list | `[]` | Worker instance definitions. Each entry creates a separate Deployment. Example: ```yaml instances:   - namespace: my-temporal-ns     command: ["./worker", "--namespace", "my-temporal-ns"]     resources:       requests:         cpu: "200m"         memory: "256Mi" ``` |

@@ -12,6 +12,12 @@ image:
   # -- Container image tag
   tag: ""
 
+startupHook:
+  # -- Run target-image startup before installing or upgrading API/worker resources.
+  enabled: false
+  # -- Maximum startup Job duration. Set the Helm timeout higher than this.
+  activeDeadlineSeconds: 1200
+
 serviceAccount:
   # -- Whether to create and use a service account
   enabled: true

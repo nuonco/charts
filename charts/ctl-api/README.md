@@ -1,6 +1,6 @@
 # ctl-api
 
-![Version: 0.12.0](https://img.shields.io/badge/Version-0.12.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 0.0.1](https://img.shields.io/badge/AppVersion-0.0.1-informational?style=flat-square)
+![Version: 0.13.0](https://img.shields.io/badge/Version-0.13.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 0.0.1](https://img.shields.io/badge/AppVersion-0.0.1-informational?style=flat-square)
 
 A helm chart for deploying the ctl-api (api and workers).
 
@@ -58,6 +58,73 @@ otel:
 
 Use a base URL without `/v1/metrics` and an image with OTLP metrics support.
 `environment` sets `deployment.environment.name`; pod UID supplies the instance ID.
+
+## Deploy hooks
+
+`hooks.enabled: true` renders one Helm hook Job per entry in `hooks.commands`, each running
+`hooks.command` (default `[/bin/service]`) followed by the entry's `args`. Jobs run **in series, in
+list order**: the list index becomes `helm.sh/hook-weight`, and Helm waits for each Job to finish
+before creating the next. A failed Job fails the release; failed Jobs are kept for inspection
+(`kubectl logs job/<fullname>-hook-<index>-<slug>`) and are replaced on the next run, successful Jobs
+are deleted.
+
+`phase: pre` runs the Job before the release manifests are applied (`pre-install,pre-upgrade`);
+`phase: post` (the default) runs after (`post-install,post-upgrade`). Every `pre` entry must be
+listed before the `post` entries, so that list order is execution order. Hook pods get the same
+environment as the deployments (`env`, `envSecrets`, OpenTelemetry) inlined, with
+`SERVICE_TYPE=hook` and `SERVICE_DEPLOYMENT=<slug>`.
+
+**First installs.** A `pre` Job starts before any release manifest is applied, and a pod whose
+ServiceAccount does not exist is rejected, so on a first install the chart also emits pre-install
+copies of the ServiceAccount, Role and RoleBinding at `helm.sh/hook-weight: "-10"`. Each copy is
+emitted only when `lookup` cannot find the live object, carries `serviceAccount.annotations` (the
+IRSA role ARN or Workload Identity binding) and Helm's ownership annotations, and is deleted with
+`hook-succeeded` once the pre Jobs finish; the release manifests then create the objects the
+workloads own. On a healthy upgrade `lookup` finds the live objects and no copy is emitted, so the
+ServiceAccount running pods use is never deleted or recreated. If a pre Job fails on a first
+install the leftover copy is adopted by the next install. With `serviceAccount.name` unset the
+pre Jobs use the namespace default account and no copies are emitted.
+
+The defaults run `startup` (migrations) before the rollout, then `admin runners update` and
+`admin post-promotion` after it, but only when the version changes:
+
+```yaml
+hooks:
+  enabled: true
+  commands:
+    - args: [startup]
+      phase: pre
+    - args: [admin, runners, update]
+      onVersionChange: true
+    - args: [admin, post-promotion]
+      onVersionChange: true
+```
+
+**Version gating.** The version is `image.tag`, or `env.VERSION` when the tag is empty. The chart
+stores it in the `<fullname>-hooks` ConfigMap and reads the previous value back with `lookup` at
+render time; `onVersionChange: true` entries render only on first install or when the value differs.
+Entries without it run on every release. Keep `image.tag` and `env.VERSION` consistent:
+`admin post-promotion` promotes `VERSION`, while the gate reads the tag first.
+
+Caveats:
+
+- Post hooks start as soon as the manifests are submitted unless the installer waits for the rollout
+  (`helm --wait`; the terraform `helm_release` `wait` default is `true`). Without waiting,
+  `admin post-promotion` can be enqueued before the new API and worker pods are ready.
+- Helm's `--timeout` (terraform `helm_release.timeout`, default 300s) applies to each hook
+  individually. Keep `hooks.activeDeadlineSeconds` (default 600) at or below it, or raise the
+  timeout, so a slow migration fails the Job with a clear reason instead of a Helm timeout.
+- `lookup` returns nothing under `helm template`, client-side dry runs and Argo CD-style rendering,
+  so gated Jobs and the RBAC hook copies always render there. Do not enable hooks under a tool
+  that renders without `lookup` and then executes the hooks (Argo CD): it would delete the live
+  ServiceAccount after every sync. Enabling hooks on an existing release runs every gated command
+  once, because the version ConfigMap does not exist yet; the ServiceAccount is left alone.
+- A failed post hook leaves the version ConfigMap already advanced (the manifests were applied
+  before it ran), so the next upgrade would skip gated commands. Set `hooks.force: true` for one
+  release to re-run them, then unset it. A failed pre hook aborts before anything is applied and
+  needs no intervention.
+- Jobs are named `<fullname>-hook-<index>-<slug>`; reordering entries changes names, and a failed
+  Job under an old name is not cleaned up automatically.
 
 ## Environment Variables
 
@@ -253,6 +320,14 @@ The `env` map is passed directly into the ConfigMap consumed by all API and work
 | gcp.psc.routes | list | `["public","auth","mcp"]` | Routes attached to `psc-gateway`, each as its own `<name>-psc` HTTPRoute annotated `external-dns.alpha.kubernetes.io/controller: none` so the gateway's internal VIP never reaches public DNS. Same keys as `externalRoutes`, except `dashboard_admin`: a PSC consumer can send any Host header, so it and the admin API are rejected (validated even when `enabled: false`). |
 | gcp.scope | string | `"global"` | Scope of the external gateway and its certificate: `global` (global external Application LB, certificate attached via a Certificate Manager certificate map) or `regional` (regional external Application LB, regional Certificate Manager certificates attached to the HTTPS listener). Regional requires a proxy-only subnet in the cluster's region. |
 | gcp.securityPolicy | string | `""` | Cloud Armor security policy name attached via GCPBackendPolicy (omit to skip Cloud Armor; the GCPBackendPolicy is always created for `logging`) |
+| hooks | object | `{"activeDeadlineSeconds":600,"backoffLimit":0,"command":["/bin/service"],"commands":[{"args":["startup"],"phase":"pre"},{"args":["admin","runners","update"],"onVersionChange":true},{"args":["admin","post-promotion"],"onVersionChange":true}],"enabled":false,"force":false,"resources":{"requests":{"cpu":"500m","memory":"512Mi"}}}` | Helm hook Jobs that run `/bin/service` subcommands around each install/upgrade (migrations, post-promotion, ...). See "Deploy hooks" in the README. |
+| hooks.activeDeadlineSeconds | int | `600` | Job `activeDeadlineSeconds` (`0` disables). Keep at or below the installer's helm timeout, which applies to each hook individually. Overridable per entry. |
+| hooks.backoffLimit | int | `0` | Job `backoffLimit` (`0`: no retry, the release fails on the first failed run). Overridable per entry. |
+| hooks.command | list | `["/bin/service"]` | argv prefix shared by every hook Job; each entry's `args` are appended |
+| hooks.commands | list | `startup` (pre), then `admin runners update` and `admin post-promotion` (post, on version change) | Commands to run, one Job each, in series in list order. Keys per entry: `args` (required list, appended to `hooks.command`), `phase` (`pre` = pre-install/pre-upgrade, `post` = post-install/post-upgrade, default `post`; all `pre` entries must come first), `onVersionChange` (default `false`: run every release), and optional overrides `backoffLimit`, `activeDeadlineSeconds`, `resources`, `env` (extra container env entries). |
+| hooks.enabled | bool | `false` | Render the hook Jobs and the `<fullname>-hooks` version ConfigMap |
+| hooks.force | bool | `false` | Run `onVersionChange` commands even if the version is unchanged. Set once to recover after a failed release that already advanced the version ConfigMap. |
+| hooks.resources | object | `{"requests":{"cpu":"500m","memory":"512Mi"}}` | Resources for hook containers, deep-merged over `api.resources`. Overridable per entry. |
 | image.repository | string | `""` | Container image repository |
 | image.tag | string | `""` | Container image tag |
 | ingress.enabled | bool | `true` | Render ingress resources: the AWS ALB Ingresses, or the GKE Gateways, HTTPRoutes and backend policies when `gcp.enabled`. Set to `false` when the load balancer is managed outside the cluster and reaches the pods through standalone NEGs (`api.<service>.neg`). The admin API then has no route at all and is reachable only in-cluster. |

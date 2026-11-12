@@ -67,6 +67,73 @@ otel:
 Use a base URL without `/v1/metrics` and an image with OTLP metrics support.
 `environment` sets `deployment.environment.name`; pod UID supplies the instance ID.
 
+## Deploy hooks
+
+`hooks.enabled: true` renders one Helm hook Job per entry in `hooks.commands`, each running
+`hooks.command` (default `[/bin/service]`) followed by the entry's `args`. Jobs run **in series, in
+list order**: the list index becomes `helm.sh/hook-weight`, and Helm waits for each Job to finish
+before creating the next. A failed Job fails the release; failed Jobs are kept for inspection
+(`kubectl logs job/<fullname>-hook-<index>-<slug>`) and are replaced on the next run, successful Jobs
+are deleted.
+
+`phase: pre` runs the Job before the release manifests are applied (`pre-install,pre-upgrade`);
+`phase: post` (the default) runs after (`post-install,post-upgrade`). Every `pre` entry must be
+listed before the `post` entries, so that list order is execution order. Hook pods get the same
+environment as the deployments (`env`, `envSecrets`, OpenTelemetry) inlined, with
+`SERVICE_TYPE=hook` and `SERVICE_DEPLOYMENT=<slug>`.
+
+**First installs.** A `pre` Job starts before any release manifest is applied, and a pod whose
+ServiceAccount does not exist is rejected, so on a first install the chart also emits pre-install
+copies of the ServiceAccount, Role and RoleBinding at `helm.sh/hook-weight: "-10"`. Each copy is
+emitted only when `lookup` cannot find the live object, carries `serviceAccount.annotations` (the
+IRSA role ARN or Workload Identity binding) and Helm's ownership annotations, and is deleted with
+`hook-succeeded` once the pre Jobs finish; the release manifests then create the objects the
+workloads own. On a healthy upgrade `lookup` finds the live objects and no copy is emitted, so the
+ServiceAccount running pods use is never deleted or recreated. If a pre Job fails on a first
+install the leftover copy is adopted by the next install. With `serviceAccount.name` unset the
+pre Jobs use the namespace default account and no copies are emitted.
+
+The defaults run `startup` (migrations) before the rollout, then `admin runners update` and
+`admin post-promotion` after it, but only when the version changes:
+
+```yaml
+hooks:
+  enabled: true
+  commands:
+    - args: [startup]
+      phase: pre
+    - args: [admin, runners, update]
+      onVersionChange: true
+    - args: [admin, post-promotion]
+      onVersionChange: true
+```
+
+**Version gating.** The version is `image.tag`, or `env.VERSION` when the tag is empty. The chart
+stores it in the `<fullname>-hooks` ConfigMap and reads the previous value back with `lookup` at
+render time; `onVersionChange: true` entries render only on first install or when the value differs.
+Entries without it run on every release. Keep `image.tag` and `env.VERSION` consistent:
+`admin post-promotion` promotes `VERSION`, while the gate reads the tag first.
+
+Caveats:
+
+- Post hooks start as soon as the manifests are submitted unless the installer waits for the rollout
+  (`helm --wait`; the terraform `helm_release` `wait` default is `true`). Without waiting,
+  `admin post-promotion` can be enqueued before the new API and worker pods are ready.
+- Helm's `--timeout` (terraform `helm_release.timeout`, default 300s) applies to each hook
+  individually. Keep `hooks.activeDeadlineSeconds` (default 600) at or below it, or raise the
+  timeout, so a slow migration fails the Job with a clear reason instead of a Helm timeout.
+- `lookup` returns nothing under `helm template`, client-side dry runs and Argo CD-style rendering,
+  so gated Jobs and the RBAC hook copies always render there. Do not enable hooks under a tool
+  that renders without `lookup` and then executes the hooks (Argo CD): it would delete the live
+  ServiceAccount after every sync. Enabling hooks on an existing release runs every gated command
+  once, because the version ConfigMap does not exist yet; the ServiceAccount is left alone.
+- A failed post hook leaves the version ConfigMap already advanced (the manifests were applied
+  before it ran), so the next upgrade would skip gated commands. Set `hooks.force: true` for one
+  release to re-run them, then unset it. A failed pre hook aborts before anything is applied and
+  needs no intervention.
+- Jobs are named `<fullname>-hook-<index>-<slug>`; reordering entries changes names, and a failed
+  Job under an old name is not cleaned up automatically.
+
 ## Environment Variables
 
 The `env` map is passed directly into the ConfigMap consumed by all API and worker pods. The following variables are supported by the ctl-api application:

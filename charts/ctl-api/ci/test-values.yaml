@@ -19,3 +19,20 @@ api:
     neg:
       enabled: true
       name: custom-slack-neg
+environment: test
+image:
+  repository: example.com/ctl-api
+  tag: v1.2.3
+env:
+  VERSION: from-env
+hooks:
+  enabled: true
+  commands:
+    - args: [startup]
+      phase: pre
+    - args: [admin, runners, update]
+      onVersionChange: true
+    - args: [admin, post-promotion]
+      onVersionChange: true
+      activeDeadlineSeconds: 120
+      backoffLimit: 2

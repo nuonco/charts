@@ -282,3 +282,37 @@ worker:
   #         memory: "256Mi"
   # ```
   instances: []
+
+# -- Helm hook Jobs that run `/bin/service` subcommands around each install/upgrade
+# (migrations, post-promotion, ...). See "Deploy hooks" in the README.
+hooks:
+  # -- Render the hook Jobs and the `<fullname>-hooks` version ConfigMap
+  enabled: false
+  # -- argv prefix shared by every hook Job; each entry's `args` are appended
+  command: [/bin/service]
+  # -- Run `onVersionChange` commands even if the version is unchanged. Set once to
+  # recover after a failed release that already advanced the version ConfigMap.
+  force: false
+  # -- Job `backoffLimit` (`0`: no retry, the release fails on the first failed run). Overridable per entry.
+  backoffLimit: 0
+  # -- Job `activeDeadlineSeconds` (`0` disables). Keep at or below the installer's
+  # helm timeout, which applies to each hook individually. Overridable per entry.
+  activeDeadlineSeconds: 600
+  # -- Resources for hook containers, deep-merged over `api.resources`. Overridable per entry.
+  resources:
+    requests:
+      cpu: 500m
+      memory: 512Mi
+  # -- Commands to run, one Job each, in series in list order. Keys per entry: `args`
+  # (required list, appended to `hooks.command`), `phase` (`pre` = pre-install/pre-upgrade,
+  # `post` = post-install/post-upgrade, default `post`; all `pre` entries must come first),
+  # `onVersionChange` (default `false`: run every release), and optional overrides
+  # `backoffLimit`, `activeDeadlineSeconds`, `resources`, `env` (extra container env entries).
+  # @default -- `startup` (pre), then `admin runners update` and `admin post-promotion` (post, on version change)
+  commands:
+    - args: [startup]
+      phase: pre
+    - args: [admin, runners, update]
+      onVersionChange: true
+    - args: [admin, post-promotion]
+      onVersionChange: true

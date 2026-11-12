@@ -96,4 +96,38 @@ if helm template ctl-api "$chart" -f "$chart/ci/test-values.yaml" --set 'hooks.c
 if helm template ctl-api "$chart" -f "$chart/ci/test-values.yaml" --set image.tag= --set env.VERSION= >/dev/null 2>&1; then fail "onVersionChange without image.tag or env.VERSION must fail rendering"; fi
 if helm template ctl-api "$chart" -f "$chart/ci/test-values.yaml" --set 'hooks.command=null' >/dev/null 2>&1; then fail "empty hooks.command must fail rendering"; fi
 
+# --- first-install RBAC hook copies ---------------------------------------------
+pre_hooks() {
+  printf '%s\n' "$1" | yq 'select(.kind != "Job" and .metadata.annotations["helm.sh/hook"] == "pre-install,pre-upgrade") | .kind + " " + .metadata.name' | grep -v -e '^---$' -e '^$' || true
+}
+# ci values set no serviceAccount.name: pre Jobs use the namespace default account, no copies.
+[ -z "$(pre_hooks "$out")" ] || fail "RBAC hook copies rendered without serviceAccount.name"
+[ -z "$(pre_hooks "$default_out")" ] || fail "RBAC hook copies rendered with default values"
+
+rbac_out="$(helm template ctl-api "$chart" -f "$chart/ci/test-values.yaml" \
+  --set serviceAccount.name=ctl-api \
+  --set 'serviceAccount.annotations.eks\.amazonaws\.com/role-arn=arn:aws:iam::123:role/ctl')"
+[ "$(pre_hooks "$rbac_out" | sort | tr '\n' ',')" = "Role ctl-api,RoleBinding ctl-api-rolebinding,ServiceAccount ctl-api," ] || fail "expected SA, Role and RoleBinding hook copies"
+# helm template cannot lookup, so copies render beside the release objects; the release ones must not be hooks.
+rbac() {
+  printf '%s\n' "$rbac_out" | yq "select(.kind == \"$1\" and .metadata.name == \"$2\" and (.metadata.annotations[\"helm.sh/hook\"] $3)) | $4"
+}
+for kind_name in "ServiceAccount ctl-api" "Role ctl-api" "RoleBinding ctl-api-rolebinding"; do
+  kind="${kind_name%% *}"; name="${kind_name#* }"
+  [ "$(rbac "$kind" "$name" '== null' '.metadata.name')" = "$name" ] || fail "release $kind missing or rendered as a hook"
+  [ "$(rbac "$kind" "$name" '!= null' '.metadata.annotations."helm.sh/hook-weight"')" = "-10" ] || fail "$kind copy hook-weight"
+  [ "$(rbac "$kind" "$name" '!= null' '.metadata.annotations."helm.sh/hook-weight" | tag')" = "!!str" ] || fail "$kind copy hook-weight must be a string"
+  [ "$(rbac "$kind" "$name" '!= null' '.metadata.annotations."helm.sh/hook-delete-policy"')" = "hook-succeeded" ] || fail "$kind copy must use hook-succeeded, never before-hook-creation"
+  [ "$(rbac "$kind" "$name" '!= null' '.metadata.annotations."meta.helm.sh/release-name"')" = "ctl-api" ] || fail "$kind copy missing release-name ownership annotation"
+  [ "$(rbac "$kind" "$name" '!= null' '.metadata.annotations."meta.helm.sh/release-namespace"')" = "default" ] || fail "$kind copy missing release-namespace ownership annotation"
+  [ "$(rbac "$kind" "$name" '!= null' '.metadata.labels."app.kubernetes.io/managed-by"')" = "Helm" ] || fail "$kind copy missing managed-by label"
+done
+[ "$(rbac ServiceAccount ctl-api '!= null' '.metadata.annotations."eks.amazonaws.com/role-arn"')" = "arn:aws:iam::123:role/ctl" ] || fail "ServiceAccount copy missing serviceAccount.annotations"
+[ "$(rbac ServiceAccount ctl-api '== null' '.metadata.annotations."eks.amazonaws.com/role-arn"')" = "arn:aws:iam::123:role/ctl" ] || fail "release ServiceAccount missing serviceAccount.annotations"
+[ "$(rbac Role ctl-api '!= null' '.rules')" = "$(rbac Role ctl-api '== null' '.rules')" ] || fail "Role copy rules differ from the release Role"
+[ "$(rbac RoleBinding ctl-api-rolebinding '!= null' '.subjects')" = "$(rbac RoleBinding ctl-api-rolebinding '== null' '.subjects')" ] || fail "RoleBinding copy subjects differ from the release RoleBinding"
+
+post_only="$(helm template ctl-api "$chart" -f "$chart/ci/test-values.yaml" --set serviceAccount.name=ctl-api --set 'hooks.commands[0].phase=post')"
+[ -z "$(pre_hooks "$post_only")" ] || fail "RBAC hook copies rendered with no pre commands"
+
 echo "ctl-api render tests passed"

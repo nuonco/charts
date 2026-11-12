@@ -82,6 +82,17 @@ listed before the `post` entries, so that list order is execution order. Hook po
 environment as the deployments (`env`, `envSecrets`, OpenTelemetry) inlined, with
 `SERVICE_TYPE=hook` and `SERVICE_DEPLOYMENT=<slug>`.
 
+**First installs.** A `pre` Job starts before any release manifest is applied, and a pod whose
+ServiceAccount does not exist is rejected, so on a first install the chart also emits pre-install
+copies of the ServiceAccount, Role and RoleBinding at `helm.sh/hook-weight: "-10"`. Each copy is
+emitted only when `lookup` cannot find the live object, carries `serviceAccount.annotations` (the
+IRSA role ARN or Workload Identity binding) and Helm's ownership annotations, and is deleted with
+`hook-succeeded` once the pre Jobs finish; the release manifests then create the objects the
+workloads own. On a healthy upgrade `lookup` finds the live objects and no copy is emitted, so the
+ServiceAccount running pods use is never deleted or recreated. If a pre Job fails on a first
+install the leftover copy is adopted by the next install. With `serviceAccount.name` unset the
+pre Jobs use the namespace default account and no copies are emitted.
+
 The defaults run `startup` (migrations) before the rollout, then `admin runners update` and
 `admin post-promotion` after it, but only when the version changes:
 
@@ -112,8 +123,10 @@ Caveats:
   individually. Keep `hooks.activeDeadlineSeconds` (default 600) at or below it, or raise the
   timeout, so a slow migration fails the Job with a clear reason instead of a Helm timeout.
 - `lookup` returns nothing under `helm template`, client-side dry runs and Argo CD-style rendering,
-  so gated Jobs always render there. Enabling hooks on an existing release also runs every gated
-  command once, because the ConfigMap does not exist yet.
+  so gated Jobs and the RBAC hook copies always render there. Do not enable hooks under a tool
+  that renders without `lookup` and then executes the hooks (Argo CD): it would delete the live
+  ServiceAccount after every sync. Enabling hooks on an existing release runs every gated command
+  once, because the version ConfigMap does not exist yet; the ServiceAccount is left alone.
 - A failed post hook leaves the version ConfigMap already advanced (the manifests were applied
   before it ran), so the next upgrade would skip gated commands. Set `hooks.force: true` for one
   release to re-run them, then unset it. A failed pre hook aborts before anything is applied and

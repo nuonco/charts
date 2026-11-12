@@ -54,3 +54,17 @@ Takes a dict: ctx (root context), index (int), args (list).
 {{- define "ctl-api.hookJobName" -}}
 {{- printf "%s-hook-%d-%s" (include "common.fullname" .ctx) (int .index) (include "ctl-api.hookSlug" .args) | trunc 63 | trimSuffix "-" -}}
 {{- end -}}
+
+{{/*
+"true" when at least one hooks.commands entry runs in the pre phase. Pre Jobs start before the
+release ServiceAccount exists on a first install, so they need the hook copies in hook_rbac.tpl.
+*/}}
+{{- define "ctl-api.hasPreHook" -}}
+{{- $has := false -}}
+{{- range .Values.hooks.commands -}}
+{{- if and (kindIs "map" .) (eq (.phase | default "post") "pre") -}}
+{{- $has = true -}}
+{{- end -}}
+{{- end -}}
+{{- if $has }}true{{ end -}}
+{{- end -}}

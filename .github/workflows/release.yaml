@@ -28,9 +28,9 @@ jobs:
           - telemetry-agent
           - runner
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4.4.0
 
-      - uses: azure/setup-helm@v4
+      - uses: azure/setup-helm@v4.3.1
 
       - name: Login to GHCR
         run: echo "${{ secrets.GITHUB_TOKEN }}" | helm registry login ${{ env.REGISTRY }} -u ${{ github.actor }} --password-stdin

@@ -20,12 +20,17 @@ metadata:
     alb.ingress.kubernetes.io/healthcheck-timeout-seconds: '2'
     alb.ingress.kubernetes.io/unhealthy-threshold-count: '2'
     alb.ingress.kubernetes.io/healthy-threshold-count: '2'
-    alb.ingress.kubernetes.io/tags: 'service=ctl-api,service_type=api,service_deployment=runner,env={{ .Values.env.ENV }}'
+    {{- include "common.albGroup" (dict "group" .Values.ingressGroups.public.name "groupTags" .Values.ingressGroups.public.tags "tags" (printf "service=ctl-api,service_type=api,service_deployment=runner,env=%s" .Values.env.ENV)) | nindent 4 }}
     external-dns.alpha.kubernetes.io/hostname: {{ .Values.api.runner.domain }}
 spec:
   ingressClassName: alb
   rules:
+    {{- if .Values.ingressGroups.public.name }}
+    - host: {{ .Values.api.runner.domain | quote }}
+      http:
+    {{- else }}
     - http:
+    {{- end }}
         paths:
           - path: /
             pathType: Prefix

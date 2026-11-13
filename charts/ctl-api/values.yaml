@@ -47,6 +47,19 @@ ingress:
   # -- Render ingress resources: the AWS ALB Ingresses, or the GKE Gateways, HTTPRoutes and backend policies when `gcp.enabled`. Set to `false` when the load balancer is managed outside the cluster and reaches the pods through standalone NEGs (`api.<service>.neg`). The admin API then has no route at all and is reachable only in-cluster.
   enabled: true
 
+# -- Share one ALB across ingresses. An empty name keeps a separate ALB per ingress. Members of a group must use the same scheme, and the controller rejects a group whose members disagree on tags.
+ingressGroups:
+  public:
+    # -- `alb.ingress.kubernetes.io/group.name` for the internet-facing ingresses.
+    name: ""
+    # -- `alb.ingress.kubernetes.io/tags` applied to every public member, replacing the per-service tags.
+    tags: ""
+  internal:
+    # -- `alb.ingress.kubernetes.io/group.name` for the internal admin ingress.
+    name: ""
+    # -- `alb.ingress.kubernetes.io/tags` applied to every internal member, replacing the per-service tags.
+    tags: ""
+
 # -- GCP-specific configuration. When enabled, GCP Gateway/HTTPRoute/HealthCheckPolicy resources are created instead of AWS ALBs.
 # @default -- disabled
 gcp:

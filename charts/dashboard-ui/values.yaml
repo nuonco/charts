@@ -92,6 +92,10 @@ ui:
     public_domain: ""
     # -- TLS certificate ARN (AWS) for the ALB
     public_domain_certificate: ""
+    # -- `alb.ingress.kubernetes.io/group.name`. Empty keeps a dedicated ALB. Set the same name and tags as the other internet-facing ingresses that should share it.
+    group_name: ""
+    # -- `alb.ingress.kubernetes.io/tags` used when `group_name` is set. Must match the other members of the group.
+    group_tags: ""
   autoscaling:
     # -- Minimum replicas
     minReplicas: 2

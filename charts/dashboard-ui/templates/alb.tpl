@@ -19,12 +19,22 @@ metadata:
     alb.ingress.kubernetes.io/healthcheck-timeout-seconds: '2'
     alb.ingress.kubernetes.io/unhealthy-threshold-count: '2'
     alb.ingress.kubernetes.io/healthy-threshold-count: '2'
+    {{- if .Values.ui.alb.group_name }}
+    alb.ingress.kubernetes.io/group.name: {{ .Values.ui.alb.group_name | quote }}
+    alb.ingress.kubernetes.io/tags: {{ .Values.ui.alb.group_tags | quote }}
+    {{- else }}
     alb.ingress.kubernetes.io/tags: 'service=dashboard-ui,service_type=ui,env={{ .Values.env.ENV }}'
+    {{- end }}
     external-dns.alpha.kubernetes.io/hostname: {{ .Values.ui.alb.public_domain }}
 spec:
   ingressClassName: alb
   rules:
+    {{- if .Values.ui.alb.group_name }}
+    - host: {{ .Values.ui.alb.public_domain | quote }}
+      http:
+    {{- else }}
     - http:
+    {{- end }}
         paths:
           - path: /
             pathType: Prefix

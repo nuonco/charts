@@ -1,6 +1,6 @@
 # ctl-api
 
-![Version: 0.12.0](https://img.shields.io/badge/Version-0.12.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 0.0.1](https://img.shields.io/badge/AppVersion-0.0.1-informational?style=flat-square)
+![Version: 0.13.0](https://img.shields.io/badge/Version-0.13.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 0.0.1](https://img.shields.io/badge/AppVersion-0.0.1-informational?style=flat-square)
 
 A helm chart for deploying the ctl-api (api and workers).
 
@@ -256,6 +256,11 @@ The `env` map is passed directly into the ConfigMap consumed by all API and work
 | image.repository | string | `""` | Container image repository |
 | image.tag | string | `""` | Container image tag |
 | ingress.enabled | bool | `true` | Render ingress resources: the AWS ALB Ingresses, or the GKE Gateways, HTTPRoutes and backend policies when `gcp.enabled`. Set to `false` when the load balancer is managed outside the cluster and reaches the pods through standalone NEGs (`api.<service>.neg`). The admin API then has no route at all and is reachable only in-cluster. |
+| ingressGroups | object | `{"internal":{"name":"","tags":""},"public":{"name":"","tags":""}}` | Share one ALB across ingresses. An empty name keeps a separate ALB per ingress. Members of a group must use the same scheme, and the controller rejects a group whose members disagree on tags. |
+| ingressGroups.internal.name | string | `""` | `alb.ingress.kubernetes.io/group.name` for the internal admin ingress. |
+| ingressGroups.internal.tags | string | `""` | `alb.ingress.kubernetes.io/tags` applied to every internal member, replacing the per-service tags. |
+| ingressGroups.public.name | string | `""` | `alb.ingress.kubernetes.io/group.name` for the internet-facing ingresses. |
+| ingressGroups.public.tags | string | `""` | `alb.ingress.kubernetes.io/tags` applied to every public member, replacing the per-service tags. |
 | nameOverride | string | `""` | Override the chart name |
 | otel.additional_resource_attributes | object | `{}` | Additional OTEL resource attributes, overriding defaults. |
 | otel.enabled | bool | `false` | Enable control-plane OTLP export (currently metrics). |

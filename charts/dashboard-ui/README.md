@@ -1,6 +1,6 @@
 # dashboard-ui
 
-![Version: 0.4.0](https://img.shields.io/badge/Version-0.4.0-informational?style=flat-square)
+![Version: 0.5.0](https://img.shields.io/badge/Version-0.5.0-informational?style=flat-square)
 ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square)
 ![AppVersion: 0.0.1](https://img.shields.io/badge/AppVersion-0.0.1-informational?style=flat-square)
 
@@ -95,6 +95,8 @@ The `env` map is passed directly into the ConfigMap consumed by all dashboard-ui
 | serviceAccount.annotations                       | object | `{}`        | Annotations to add to the service account                                                                              |
 | serviceAccount.enabled                           | bool   | `true`      | Whether to create and use a service account                                                                            |
 | serviceAccount.name                              | string | `""`        | Service account name                                                                                                   |
+| ui.alb.group_name                                | string | `""`        | `alb.ingress.kubernetes.io/group.name`. Empty keeps a dedicated ALB. Set the same name and tags as the other internet-facing ingresses that should share it. |
+| ui.alb.group_tags                                | string | `""`        | `alb.ingress.kubernetes.io/tags` used when `group_name` is set. Must match the other members of the group.             |
 | ui.alb.public_domain                             | string | `""`        | Public domain for the ALB                                                                                              |
 | ui.alb.public_domain_certificate                 | string | `""`        | TLS certificate ARN (AWS) for the ALB                                                                                  |
 | ui.autoscaling.maxReplicas                       | int    | `5`         | Maximum replicas                                                                                                       |
